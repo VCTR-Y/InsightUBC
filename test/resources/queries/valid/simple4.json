@@ -1,0 +1,97 @@
+{
+	"title": "SELECT dept, audit WHERE dept IS NOT cpsc AND audit = 5",
+	"input": {
+		"WHERE": {
+			"AND": [
+				{
+					"NOT": {
+						"IS": {
+							"sections_dept": "cpsc"
+						}
+					}
+				},
+				{
+					"EQ": {
+						"sections_audit": 5
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": ["sections_dept", "sections_audit"],
+			"ORDER": "sections_audit"
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{ "sections_dept": "stat", "sections_audit": 5 },
+		{ "sections_dept": "spph", "sections_audit": 5 },
+		{ "sections_dept": "span", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "rhsc", "sections_audit": 5 },
+		{ "sections_dept": "psyc", "sections_audit": 5 },
+		{ "sections_dept": "phil", "sections_audit": 5 },
+		{ "sections_dept": "musc", "sections_audit": 5 },
+		{ "sections_dept": "mine", "sections_audit": 5 },
+		{ "sections_dept": "mine", "sections_audit": 5 },
+		{ "sections_dept": "micb", "sections_audit": 5 },
+		{ "sections_dept": "micb", "sections_audit": 5 },
+		{ "sections_dept": "micb", "sections_audit": 5 },
+		{ "sections_dept": "micb", "sections_audit": 5 },
+		{ "sections_dept": "mech", "sections_audit": 5 },
+		{ "sections_dept": "libr", "sections_audit": 5 },
+		{ "sections_dept": "libr", "sections_audit": 5 },
+		{ "sections_dept": "japn", "sections_audit": 5 },
+		{ "sections_dept": "ital", "sections_audit": 5 },
+		{ "sections_dept": "ital", "sections_audit": 5 },
+		{ "sections_dept": "hist", "sections_audit": 5 },
+		{ "sections_dept": "germ", "sections_audit": 5 },
+		{ "sections_dept": "germ", "sections_audit": 5 },
+		{ "sections_dept": "germ", "sections_audit": 5 },
+		{ "sections_dept": "germ", "sections_audit": 5 },
+		{ "sections_dept": "germ", "sections_audit": 5 },
+		{ "sections_dept": "frst", "sections_audit": 5 },
+		{ "sections_dept": "frst", "sections_audit": 5 },
+		{ "sections_dept": "frst", "sections_audit": 5 },
+		{ "sections_dept": "frst", "sections_audit": 5 },
+		{ "sections_dept": "frst", "sections_audit": 5 },
+		{ "sections_dept": "fren", "sections_audit": 5 },
+		{ "sections_dept": "fren", "sections_audit": 5 },
+		{ "sections_dept": "fren", "sections_audit": 5 },
+		{ "sections_dept": "eece", "sections_audit": 5 },
+		{ "sections_dept": "eece", "sections_audit": 5 },
+		{ "sections_dept": "educ", "sections_audit": 5 },
+		{ "sections_dept": "educ", "sections_audit": 5 },
+		{ "sections_dept": "edcp", "sections_audit": 5 },
+		{ "sections_dept": "edcp", "sections_audit": 5 },
+		{ "sections_dept": "econ", "sections_audit": 5 },
+		{ "sections_dept": "econ", "sections_audit": 5 },
+		{ "sections_dept": "econ", "sections_audit": 5 },
+		{ "sections_dept": "econ", "sections_audit": 5 },
+		{ "sections_dept": "econ", "sections_audit": 5 },
+		{ "sections_dept": "comm", "sections_audit": 5 },
+		{ "sections_dept": "comm", "sections_audit": 5 },
+		{ "sections_dept": "comm", "sections_audit": 5 },
+		{ "sections_dept": "civl", "sections_audit": 5 },
+		{ "sections_dept": "civl", "sections_audit": 5 },
+		{ "sections_dept": "chin", "sections_audit": 5 },
+		{ "sections_dept": "chin", "sections_audit": 5 },
+		{ "sections_dept": "chbe", "sections_audit": 5 },
+		{ "sections_dept": "biol", "sections_audit": 5 },
+		{ "sections_dept": "biol", "sections_audit": 5 },
+		{ "sections_dept": "bafi", "sections_audit": 5 },
+		{ "sections_dept": "bafi", "sections_audit": 5 },
+		{ "sections_dept": "arth", "sections_audit": 5 },
+		{ "sections_dept": "arth", "sections_audit": 5 }
+	]
+}

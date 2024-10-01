@@ -1,0 +1,115 @@
+{
+	"title": "SELECT dept, avg, pass WHERE dept IS engl* AND avg > 75 AND pass > 60",
+	"input": {
+		"WHERE": {
+			"AND": [
+				{
+					"IS": {
+						"sections_dept": "engl*"
+					}
+				},
+				{
+					"GT": {
+						"sections_avg": 75
+					}
+				},
+				{
+					"NOT": {
+						"LT": {
+							"sections_pass": 61
+						}
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_avg",
+				"sections_pass"
+			],
+			"ORDER": "sections_pass"
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{ "sections_dept": "engl", "sections_avg": 76.29, "sections_pass": 63 },
+		{ "sections_dept": "engl", "sections_avg": 75.03, "sections_pass": 66 },
+		{ "sections_dept": "engl", "sections_avg": 75.44, "sections_pass": 71 },
+		{ "sections_dept": "engl", "sections_avg": 75.4, "sections_pass": 72 },
+		{ "sections_dept": "engl", "sections_avg": 75.19, "sections_pass": 72 },
+		{ "sections_dept": "engl", "sections_avg": 76.64, "sections_pass": 75 },
+		{ "sections_dept": "engl", "sections_avg": 77.31, "sections_pass": 75 },
+		{ "sections_dept": "engl", "sections_avg": 77.45, "sections_pass": 76 },
+		{ "sections_dept": "engl", "sections_avg": 77.21, "sections_pass": 76 },
+		{ "sections_dept": "engl", "sections_avg": 76.18, "sections_pass": 78 },
+		{ "sections_dept": "engl", "sections_avg": 79.45, "sections_pass": 83 },
+		{ "sections_dept": "engl", "sections_avg": 77.7, "sections_pass": 86 },
+		{ "sections_dept": "engl", "sections_avg": 77.58, "sections_pass": 88 },
+		{ "sections_dept": "engl", "sections_avg": 75.3, "sections_pass": 88 },
+		{ "sections_dept": "engl", "sections_avg": 80.23, "sections_pass": 89 },
+		{ "sections_dept": "engl", "sections_avg": 77.12, "sections_pass": 90 },
+		{ "sections_dept": "engl", "sections_avg": 75.88, "sections_pass": 90 },
+		{ "sections_dept": "engl", "sections_avg": 76.58, "sections_pass": 91 },
+		{ "sections_dept": "engl", "sections_avg": 75.89, "sections_pass": 92 },
+		{ "sections_dept": "engl", "sections_avg": 75.98, "sections_pass": 92 },
+		{ "sections_dept": "engl", "sections_avg": 78.84, "sections_pass": 92 },
+		{ "sections_dept": "engl", "sections_avg": 75.36, "sections_pass": 94 },
+		{ "sections_dept": "engl", "sections_avg": 82.36, "sections_pass": 94 },
+		{ "sections_dept": "engl", "sections_avg": 76.21, "sections_pass": 97 },
+		{ "sections_dept": "engl", "sections_avg": 75.32, "sections_pass": 99 },
+		{ "sections_dept": "engl", "sections_avg": 78.51, "sections_pass": 101 },
+		{ "sections_dept": "engl", "sections_avg": 76.38, "sections_pass": 104 },
+		{ "sections_dept": "engl", "sections_avg": 75.06, "sections_pass": 106 },
+		{ "sections_dept": "engl", "sections_avg": 81.43, "sections_pass": 107 },
+		{ "sections_dept": "engl", "sections_avg": 76.31, "sections_pass": 109 },
+		{ "sections_dept": "engl", "sections_avg": 79.27, "sections_pass": 111 },
+		{ "sections_dept": "engl", "sections_avg": 75.79, "sections_pass": 112 },
+		{ "sections_dept": "engl", "sections_avg": 75.68, "sections_pass": 112 },
+		{ "sections_dept": "engl", "sections_avg": 77.77, "sections_pass": 114 },
+		{ "sections_dept": "engl", "sections_avg": 82.69, "sections_pass": 114 },
+		{ "sections_dept": "engl", "sections_avg": 76.55, "sections_pass": 117 },
+		{ "sections_dept": "engl", "sections_avg": 76.27, "sections_pass": 118 },
+		{ "sections_dept": "engl", "sections_avg": 77.16, "sections_pass": 118 },
+		{ "sections_dept": "engl", "sections_avg": 75.04, "sections_pass": 118 },
+		{ "sections_dept": "engl", "sections_avg": 75.21, "sections_pass": 120 },
+		{ "sections_dept": "engl", "sections_avg": 76.7, "sections_pass": 122 },
+		{ "sections_dept": "engl", "sections_avg": 76.11, "sections_pass": 122 },
+		{ "sections_dept": "engl", "sections_avg": 75.56, "sections_pass": 124 },
+		{ "sections_dept": "engl", "sections_avg": 81.27, "sections_pass": 129 },
+		{ "sections_dept": "engl", "sections_avg": 77.68, "sections_pass": 129 },
+		{ "sections_dept": "engl", "sections_avg": 75.98, "sections_pass": 131 },
+		{ "sections_dept": "engl", "sections_avg": 80.34, "sections_pass": 132 },
+		{ "sections_dept": "engl", "sections_avg": 76.68, "sections_pass": 132 },
+		{ "sections_dept": "engl", "sections_avg": 75.73, "sections_pass": 135 },
+		{ "sections_dept": "engl", "sections_avg": 81.2, "sections_pass": 136 },
+		{ "sections_dept": "engl", "sections_avg": 75.58, "sections_pass": 136 },
+		{ "sections_dept": "engl", "sections_avg": 75.55, "sections_pass": 138 },
+		{ "sections_dept": "engl", "sections_avg": 80.51, "sections_pass": 139 },
+		{ "sections_dept": "engl", "sections_avg": 75.11, "sections_pass": 140 },
+		{ "sections_dept": "engl", "sections_avg": 75.3, "sections_pass": 142 },
+		{ "sections_dept": "engl", "sections_avg": 76.64, "sections_pass": 143 },
+		{ "sections_dept": "engl", "sections_avg": 75.77, "sections_pass": 143 },
+		{ "sections_dept": "engl", "sections_avg": 76.38, "sections_pass": 149 },
+		{ "sections_dept": "engl", "sections_avg": 75.08, "sections_pass": 150 },
+		{ "sections_dept": "engl", "sections_avg": 75.44, "sections_pass": 152 },
+		{ "sections_dept": "engl", "sections_avg": 80.87, "sections_pass": 155 },
+		{ "sections_dept": "engl", "sections_avg": 76.73, "sections_pass": 155 },
+		{ "sections_dept": "engl", "sections_avg": 80.99, "sections_pass": 156 },
+		{ "sections_dept": "engl", "sections_avg": 77.35, "sections_pass": 156 },
+		{ "sections_dept": "engl", "sections_avg": 75.57, "sections_pass": 167 },
+		{ "sections_dept": "engl", "sections_avg": 75.87, "sections_pass": 168 },
+		{ "sections_dept": "engl", "sections_avg": 76.57, "sections_pass": 172 },
+		{ "sections_dept": "engl", "sections_avg": 78.05, "sections_pass": 182 },
+		{ "sections_dept": "engl", "sections_avg": 79.93, "sections_pass": 190 },
+		{ "sections_dept": "engl", "sections_avg": 77.48, "sections_pass": 195 },
+		{ "sections_dept": "engl", "sections_avg": 79.61, "sections_pass": 213 },
+		{ "sections_dept": "engl", "sections_avg": 79.49, "sections_pass": 223 },
+		{ "sections_dept": "engl", "sections_avg": 75.74, "sections_pass": 224 },
+		{ "sections_dept": "engl", "sections_avg": 75.46, "sections_pass": 265 },
+		{ "sections_dept": "engl", "sections_avg": 75.33, "sections_pass": 283 },
+		{ "sections_dept": "engl", "sections_avg": 76.56, "sections_pass": 312 },
+		{ "sections_dept": "engl", "sections_avg": 75.64, "sections_pass": 339 },
+		{ "sections_dept": "engl", "sections_avg": 76.18, "sections_pass": 392 }
+	]
+}

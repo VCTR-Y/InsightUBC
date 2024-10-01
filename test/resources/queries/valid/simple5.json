@@ -1,0 +1,115 @@
+{
+	"title": "SELECT instructor, avg, fail WHERE instructor IS *wolfman* AND avg > 90 OR fail < 10",
+	"input": {
+		"WHERE": {
+			"AND": [
+				{
+					"IS": {
+						"sections_instructor": "*wolfman*"
+					}
+				},
+				{
+					"OR": [
+						{
+							"GT": {
+								"sections_avg": 90
+							}
+						},
+						{
+							"LT": {
+								"sections_fail": 10
+							}
+						}
+					]
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": ["sections_instructor", "sections_avg", "sections_fail"],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 65.1,
+			"sections_fail": 9
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 67.76,
+			"sections_fail": 9
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 70.94,
+			"sections_fail": 8
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 71.39,
+			"sections_fail": 6
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 71.82,
+			"sections_fail": 7
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 73.58,
+			"sections_fail": 2
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 74.12,
+			"sections_fail": 5
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 74.58,
+			"sections_fail": 4
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 76.05,
+			"sections_fail": 9
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 77.41,
+			"sections_fail": 3
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 78.56,
+			"sections_fail": 9
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 80.11,
+			"sections_fail": 0
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 80.15,
+			"sections_fail": 4
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 80.2,
+			"sections_fail": 0
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 82.45,
+			"sections_fail": 5
+		},
+		{
+			"sections_instructor": "wolfman, steven",
+			"sections_avg": 92,
+			"sections_fail": 0
+		}
+	]
+}
