@@ -174,7 +174,7 @@ describe("InsightFacade", function () {
 						numRows: 64612,
 					},
 				]);
-			} catch (err) {
+			} catch (_err) {
 				expect.fail("Should not throw an error.");
 			}
 		});
@@ -227,7 +227,7 @@ describe("InsightFacade", function () {
 
 				const datasets = await facade.listDatasets();
 				expect(datasets.length).to.eq(0);
-			} catch (err) {
+			} catch (_) {
 				expect.fail("Should not throw an error.");
 			}
 		});
@@ -240,7 +240,7 @@ describe("InsightFacade", function () {
 				await facade.removeDataset("ubc2");
 				const datasets = await facade.listDatasets();
 				expect(datasets.length).to.eq(0);
-			} catch (err) {
+			} catch (_err) {
 				expect.fail("Should not throw an error.");
 			}
 		});
