@@ -1,0 +1,9 @@
+{
+	"title": "Query with invalid key in COLUMNS",
+	"input": {
+		"WHERE": { "GT": { "sections_avg": 90 } },
+		"OPTIONS": { "COLUMNS": ["sections_dept", "sections_bob"] }
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
