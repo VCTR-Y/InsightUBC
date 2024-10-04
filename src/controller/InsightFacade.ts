@@ -20,8 +20,9 @@ export default class InsightFacade implements IInsightFacade {
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
 		// TODO: Remove this once you implement the methods!
+		// console.log(query);
 		if (isQuery(query)) {
-			//console.log(query);
+			// console.log(query);
 		} else {
 			throw new InsightError("Invalid JSON");
 		}
@@ -65,7 +66,44 @@ interface QueryObject {
 }
 
 function isQuery(object: any): object is QueryObject {
-	return typeof object === "object" && object !== null;
-	// &&
-	// isWhereClause(obj.WHERE) && isOptionsClause(obj.OPTIONS);
+	return (
+		typeof object === "object" && object !== null && isWhereObject(object.WHERE) && isOptionsObject(object.OPTIONS)
+	);
+}
+
+function isWhereObject(object: any): object is WhereObject {
+	return isFilterObject(object);
+}
+
+function isOptionsObject(object: any): object is OptionsObject {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		Array.isArray(object.COLUMNS) &&
+		(typeof object.ORDER === "string" || object.ORDER === undefined)
+	);
+}
+
+function isFilterObject(object: any): object is FILTER {
+	return isSCOMPARATOR(object) || isMCOMPARATOR(object) || isLOGICCOMPARATOR(object);
+}
+
+function isSCOMPARATOR(object: any): object is SCOMPARATOR {
+	return typeof object === "object" && object !== null && object.IS !== undefined;
+}
+
+function isMCOMPARATOR(object: any): object is SCOMPARATOR {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		(object.GT !== undefined || object.LT !== undefined || object.EQ !== undefined)
+	);
+}
+
+function isLOGICCOMPARATOR(object: any): object is SCOMPARATOR {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		(object.AND !== undefined || object.OR !== undefined || object.NOT !== undefined)
+	);
 }
