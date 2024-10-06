@@ -1,4 +1,11 @@
-import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult } from "./IInsightFacade";
+import {
+	IInsightFacade,
+	InsightDataset,
+	InsightDatasetKind,
+	InsightError,
+	InsightResult,
+	NotFoundError,
+} from "./IInsightFacade";
 import JSZip from "jszip";
 
 /**
@@ -23,6 +30,10 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("Invalid Content");
 		}
 
+		if (!this.isBase64(content)) {
+			throw new InsightError("Content is not in Base64");
+		}
+
 		if (kind !== InsightDatasetKind.Sections) {
 			throw new InsightError("Invalid Dataset Kind");
 		}
@@ -35,7 +46,27 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("No Courses Folder");
 		}
 
-		const numRows = 0;
+		let numRows = 0;
+		const sections = [];
+
+		const promises = Object.entries(courses.files)
+			.filter(([relativePath]) => relativePath.endsWith(".json"))
+			.map(async ([relativePath, file]) => {
+				const fileData = await file.async("string");
+				const parseData = JSON.parse(fileData);
+
+				if (parseData && Array.isArray(parseData.result) && parseData.result.length > 0) {
+					sections.push(...parseData.result);
+					return parseData.result.length;
+				} else {
+					throw new InsightError("Invalid JSON");
+				}
+			});
+
+		await Promise.all(promises);
+		console.log(promises);
+
+		numRows = sections.length;
 
 		const dataset: InsightDataset = {
 			id,
@@ -45,7 +76,12 @@ export default class InsightFacade implements IInsightFacade {
 
 		this.datasets.set(id, dataset);
 
-		return ["Implementation unfinished"];
+		return Array.from(this.datasets.keys());
+	}
+
+	private isBase64(str: string): boolean {
+		const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
+		return base64Regex.test(str);
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -55,8 +91,9 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		if (!this.datasets.has(id)) {
-			throw new InsightError("Dataset Doesn't Exist");
+			throw new NotFoundError("Dataset ID Not Found");
 		}
+
 		this.datasets.delete(id);
 		return id;
 	}
