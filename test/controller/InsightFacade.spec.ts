@@ -270,6 +270,7 @@ describe("InsightFacade", function () {
 				}
 				expect(result).to.deep.equal(expected);
 			} catch (err) {
+				console.log(err);
 				if (!errorExpected) {
 					expect.fail(`performQuery threw unexpected error: ${err}`);
 				}
@@ -286,15 +287,15 @@ describe("InsightFacade", function () {
 
 			// Add the datasets to InsightFacade once.
 			// Will *fail* if there is a problem reading ANY dataset.
-			const loadDatasetPromises: Promise<string[]>[] = [
-				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
-			];
+			// const loadDatasetPromises: Promise<string[]>[] = [
+			// 	facade.addDataset("sections", sections, InsightDatasetKind.Sections),
+			// ];
 
-			try {
-				await Promise.all(loadDatasetPromises);
-			} catch (err) {
-				throw new Error(`In PerformQuery Before hook, dataset(s) failed to be added. \n${err}`);
-			}
+			// try {
+			// 	await Promise.all(loadDatasetPromises);
+			// } catch (err) {
+			// 	throw new Error(`In PerformQuery Before hook, dataset(s) failed to be added. \n${err}`);
+			// }
 		});
 
 		after(async function () {

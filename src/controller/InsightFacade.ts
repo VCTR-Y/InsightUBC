@@ -155,8 +155,46 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-		// TODO: Remove this once you implement the methods!
-		throw new Error(`InsightFacadeImpl::performQuery() is unimplemented! - query=${query};`);
+		if (isQuery(query)) {
+			const options = query.OPTIONS;
+			const where = query.WHERE;
+			if (options.COLUMNS.length === 0) {
+				throw new InsightError("COLUMNS must be a non-empty array");
+			}
+
+			const datasetName = options.COLUMNS[0].split("_")[0];
+			try {
+				const data = await fs.readFile(`data/${datasetName}.json`, "utf-8");
+				const dataset: Section[] = JSON.parse(data);
+
+				const filteredData = filterData(dataset, where);
+
+				const selectedData = filteredData.map((row) => {
+					const selectedRow: any = {};
+
+					query.OPTIONS.COLUMNS.forEach((column) => {
+						const oldColumn = column.split("_")[1];
+						selectedRow[column] = row[oldColumn];
+					});
+
+					return selectedRow;
+				});
+
+				if (query.OPTIONS.ORDER) {
+					selectedData.sort((a, b) => {
+						const orderKey = query.OPTIONS.ORDER!;
+						return a[orderKey] > b[orderKey] ? 1 : -1;
+					});
+				}
+
+				return selectedData;
+			} catch (_err) {
+				// console.log(err);
+				throw new InsightError("dataset not found");
+			}
+		} else {
+			throw new InsightError("Invalid JSON");
+		}
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
@@ -173,4 +211,128 @@ export default class InsightFacade implements IInsightFacade {
 
 		return list;
 	}
+}
+
+interface Section {
+	title: string;
+	uuid: string;
+	instructor: string;
+	audit: number;
+	year: number;
+	id: string;
+	pass: number;
+	fail: number;
+	avg: number;
+	dept: string;
+}
+
+interface MCOMPARATOR {
+	GT?: Record<string, number>;
+	LT?: Record<string, number>;
+	EQ?: Record<string, number>;
+}
+
+interface SCOMPARATOR {
+	IS?: Record<string, string>;
+}
+
+type FILTER = SCOMPARATOR | MCOMPARATOR | LOGICCOMPARATOR;
+
+interface LOGICCOMPARATOR {
+	AND?: FILTER[];
+	OR?: FILTER[];
+	NOT?: FILTER;
+}
+
+type WhereObject = FILTER;
+
+interface OptionsObject {
+	COLUMNS: string[];
+	ORDER?: string;
+}
+
+interface QueryObject {
+	WHERE: WhereObject;
+	OPTIONS: OptionsObject;
+}
+
+function isQuery(object: any): object is QueryObject {
+	return (
+		typeof object === "object" && object !== null && isWhereObject(object.WHERE) && isOptionsObject(object.OPTIONS)
+	);
+}
+
+function isWhereObject(object: any): object is WhereObject {
+	return isFilterObject(object);
+}
+
+function isOptionsObject(object: any): object is OptionsObject {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		Array.isArray(object.COLUMNS) &&
+		(typeof object.ORDER === "string" || object.ORDER === undefined)
+	);
+}
+
+function isFilterObject(object: any): object is FILTER {
+	return isSCOMPARATOR(object) || isMCOMPARATOR(object) || isLOGICCOMPARATOR(object);
+}
+
+function isSCOMPARATOR(object: any): object is SCOMPARATOR {
+	return typeof object === "object" && object !== null && object.IS !== undefined;
+}
+
+function isMCOMPARATOR(object: any): object is SCOMPARATOR {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		(object.GT !== undefined || object.LT !== undefined || object.EQ !== undefined)
+	);
+}
+
+function isLOGICCOMPARATOR(object: any): object is SCOMPARATOR {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		(object.AND !== undefined || object.OR !== undefined || object.NOT !== undefined)
+	);
+}
+
+function filterData(dataset: any[], where: WhereObject): any[] {
+	return dataset.filter((row) => {
+		return parseWhereObject(row, where);
+	});
+}
+
+function parseWhereObject(row: any, where: WhereObject): boolean {
+	// console.log(where);
+	if ("IS" in where) {
+		//console.log(Object.entries(where.IS!)[0]);
+		const [skey, value] = Object.entries(where.IS!)[0];
+		const key = skey.split("_")[1];
+		return row[key].startsWith(value.replace("*", ""));
+	} else if ("GT" in where) {
+		//console.log(Object.entries(where.GT!)[0]);
+		const [mkey, value] = Object.entries(where.GT!)[0];
+		const key = mkey.split("_")[1];
+		return row[key] > value;
+	} else if ("LT" in where) {
+		//console.log(Object.entries(where.GT!)[0]);
+		const [mkey, value] = Object.entries(where.LT!)[0];
+		const key = mkey.split("_")[1];
+		return row[key] < value;
+	} else if ("EQ" in where) {
+		//console.log(Object.entries(where.GT!)[0]);
+		const [mkey, value] = Object.entries(where.EQ!)[0];
+		const key = mkey.split("_")[1];
+		return row[key] === value;
+	} else if ("AND" in where) {
+		return where.AND!.every((child) => parseWhereObject(row, child));
+	} else if ("OR" in where) {
+		return where.OR!.some((child) => parseWhereObject(row, child));
+	} else if ("NOT" in where) {
+		return !parseWhereObject(row, where.NOT!);
+	}
+	return true;
 }
