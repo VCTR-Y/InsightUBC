@@ -118,13 +118,15 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	private renameKeys(sections: any[]): any[] {
+		const def = 1900;
+
 		return sections.map((item: any) => ({
 			uuid: item.id,
 			id: item.Course,
 			title: item.Title,
 			instructor: item.Professor,
 			dept: item.Subject,
-			year: item.Year,
+			year: item.Section === "overall" ? def : Number(item.Year),
 			avg: item.Avg,
 			pass: item.Pass,
 			fail: item.Fail,
