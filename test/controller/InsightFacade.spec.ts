@@ -268,11 +268,10 @@ describe("InsightFacade", function () {
 				if (errorExpected) {
 					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
 				}
-
+				// expect(result).to.deep.equal(expected);
 				expect(result).to.have.deep.members(expected);
-				// expect(result.sort()).to.deep.equal(expected.sort());
 			} catch (err) {
-				console.log(err);
+				// console.log(err);
 				if (!errorExpected) {
 					expect.fail(`performQuery threw unexpected error: ${err}`);
 				}
