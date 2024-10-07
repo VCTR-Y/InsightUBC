@@ -164,7 +164,7 @@ export default class InsightFacade implements IInsightFacade {
 
 			const datasetName = options.COLUMNS[0].split("_")[0];
 			try {
-				const data = await fs.readFile(`_data/${datasetName}.json`, "utf-8");
+				const data = await fs.readFile(`data/${datasetName}.json`, "utf-8");
 				const dataset: Section[] = JSON.parse(data);
 
 				const filteredData = filterData(dataset, where);
@@ -188,8 +188,8 @@ export default class InsightFacade implements IInsightFacade {
 				}
 
 				return selectedData;
-			} catch (err) {
-				console.log(err);
+			} catch (_err) {
+				// console.log(err);
 				throw new InsightError("dataset not found");
 			}
 		} else {
@@ -311,7 +311,7 @@ function parseWhereObject(row: any, where: WhereObject): boolean {
 		//console.log(Object.entries(where.IS!)[0]);
 		const [skey, value] = Object.entries(where.IS!)[0];
 		const key = skey.split("_")[1];
-		return row[key].startsWith(value);
+		return row[key].startsWith(value.replace("*", ""));
 	} else if ("GT" in where) {
 		//console.log(Object.entries(where.GT!)[0]);
 		const [mkey, value] = Object.entries(where.GT!)[0];
