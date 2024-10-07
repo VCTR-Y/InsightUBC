@@ -1,4 +1,5 @@
 import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult } from "./IInsightFacade";
+import * as fs from "fs-extra";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -20,9 +21,28 @@ export default class InsightFacade implements IInsightFacade {
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
 		// TODO: Remove this once you implement the methods!
-		// console.log(query);
+		console.log(query);
 		if (isQuery(query)) {
-			// console.log(query);
+			const options = query.OPTIONS;
+			const where = query.WHERE;
+			if (options.COLUMNS.length === 0) {
+				throw new InsightError("COLUMNS must be a non-empty array");
+			}
+
+			const datasetName = options.COLUMNS[0].split("_")[0];
+			try {
+				const data = await fs.readFile(`_data/${datasetName}.json`, "utf-8");
+				const dataset: Section[] = JSON.parse(data);
+
+				// console.log(dataset);
+
+				const output = filterData(dataset, where);
+
+				console.log(output);
+			} catch (err) {
+				console.log(err);
+				throw new InsightError("dataset not found");
+			}
 		} else {
 			throw new InsightError("Invalid JSON");
 		}
@@ -33,6 +53,19 @@ export default class InsightFacade implements IInsightFacade {
 		// TODO: Remove this once you implement the methods!
 		throw new Error(`InsightFacadeImpl::listDatasets is unimplemented!`);
 	}
+}
+
+interface Section {
+	title: string;
+	uuid: string;
+	instructor: string;
+	audit: number;
+	year: number;
+	id: string;
+	pass: number;
+	fail: number;
+	avg: number;
+	dept: string;
 }
 
 interface MCOMPARATOR {
@@ -106,4 +139,26 @@ function isLOGICCOMPARATOR(object: any): object is SCOMPARATOR {
 		object !== null &&
 		(object.AND !== undefined || object.OR !== undefined || object.NOT !== undefined)
 	);
+}
+
+function filterData(dataset: any[], where: WhereObject): any[] {
+	return dataset.filter((row) => {
+		return parseWhereObject(row, where);
+	});
+}
+
+function parseWhereObject(row: any, where: WhereObject): boolean {
+	if ("IS" in where) {
+		console.log(Object.entries(where.IS!)[0]);
+		const [skey, value] = Object.entries(where.IS!)[0];
+		const key = skey.split("_")[1];
+		return row[key].equals(value);
+	} else if ("GT" in where) {
+		console.log(Object.entries(where.GT!)[0]);
+		const [mkey, value] = Object.entries(where.GT!)[0];
+		const key = mkey.split("_")[1];
+		return row[key] > value;
+	}
+
+	return true;
 }
