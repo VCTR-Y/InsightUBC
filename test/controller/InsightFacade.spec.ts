@@ -270,7 +270,6 @@ describe("InsightFacade", function () {
 				}
 				// expect(result).to.deep.equal(expected);
 				expect(result).to.have.deep.members(expected);
-
 			} catch (err) {
 				// console.log(err);
 				if (!errorExpected) {
