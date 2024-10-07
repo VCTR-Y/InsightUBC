@@ -98,16 +98,31 @@ export default class InsightFacade implements IInsightFacade {
 					throw new InsightError("result/rank key not found");
 				}
 				if (parsedData && Array.isArray(parsedData.result) && parsedData.result.length > 0) {
-					sections.push(...parsedData.result);
+					const datasetMapped = this.renameKeys(parsedData.result);
+					sections.push(...datasetMapped);
 					return parsedData.result.length;
 				}
 			} catch (_err) {
 				throw new InsightError("Invalid JSON");
 			}
 		});
-
 		await Promise.all(promises);
 		return sections;
+	}
+
+	private renameKeys(sections: any[]): any[] {
+		return sections.map((item: any) => ({
+			uuid: item.id,
+			id: item.Course,
+			title: item.Title,
+			instructor: item.Professor,
+			dept: item.Subject,
+			year: item.Year,
+			avg: item.Avg,
+			pass: item.Pass,
+			fail: item.Fail,
+			audit: item.Audit,
+		}));
 	}
 
 	private async addDatasetToDisk(id: string, sections: any[]): Promise<void> {
@@ -120,7 +135,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		const filePath = path.join(directory, `${id}.json`);
 		try {
-			await fs.outputJSON(filePath, sections);
+			await fs.outputJSON(filePath, sections, { spaces: 2 });
 		} catch (_err) {
 			throw new InsightError("Failed to write dataset to disk");
 		}
