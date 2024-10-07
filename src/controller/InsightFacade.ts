@@ -1,11 +1,17 @@
 import {
+	FILTER,
 	IInsightFacade,
 	InsightDataset,
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
 	NotFoundError,
+	OptionsObject,
+	QueryObject,
 	ResultTooLargeError,
+	SCOMPARATOR,
+	Section,
+	WhereObject,
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import fs from "fs-extra";
@@ -173,9 +179,7 @@ export default class InsightFacade implements IInsightFacade {
 				if (filteredData.length > maxResults) {
 					throw new ResultTooLargeError();
 				}
-				const selectedData = selectAndOrder(filteredData);
-
-				return selectedData;
+				return selectAndOrder(filteredData, query);
 			} catch (err) {
 				// console.log(err);
 				if (err instanceof ResultTooLargeError) {
@@ -203,49 +207,6 @@ export default class InsightFacade implements IInsightFacade {
 
 		return list;
 	}
-}
-
-interface Section {
-	title: string;
-	uuid: string;
-	instructor: string;
-	audit: number;
-	year: number;
-	id: string;
-	pass: number;
-	fail: number;
-	avg: number;
-	dept: string;
-}
-
-interface MCOMPARATOR {
-	GT?: Record<string, number>;
-	LT?: Record<string, number>;
-	EQ?: Record<string, number>;
-}
-
-interface SCOMPARATOR {
-	IS?: Record<string, string>;
-}
-
-type FILTER = SCOMPARATOR | MCOMPARATOR | LOGICCOMPARATOR;
-
-interface LOGICCOMPARATOR {
-	AND?: FILTER[];
-	OR?: FILTER[];
-	NOT?: FILTER;
-}
-
-type WhereObject = FILTER;
-
-interface OptionsObject {
-	COLUMNS: string[];
-	ORDER?: string;
-}
-
-interface QueryObject {
-	WHERE: WhereObject;
-	OPTIONS: OptionsObject;
 }
 
 function isQuery(object: any): object is QueryObject {
@@ -346,12 +307,6 @@ function handleIS(row: any, where: WhereObject, datasetName: string): boolean {
 
 		const cleanValue = value.replaceAll("*", "");
 
-		// if (cleanValue.length === 0) {
-		// 	throw new InsightError("inputstring can't be empty");
-		// }
-
-		// console.log(row[key]);
-		// console.log(cleanValue);
 		if (startsWithWildcard && endsWithWildcard) {
 			return row[key].includes(cleanValue);
 		} else if (startsWithWildcard) {
@@ -383,6 +338,5 @@ function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
 			return a[orderKey] > b[orderKey] ? 1 : -1;
 		});
 	}
-
 	return selectedData;
 }
