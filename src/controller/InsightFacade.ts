@@ -155,8 +155,6 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-		// TODO: Remove this once you implement the methods!
-		console.log(query);
 		if (isQuery(query)) {
 			const options = query.OPTIONS;
 			const where = query.WHERE;
@@ -169,11 +167,27 @@ export default class InsightFacade implements IInsightFacade {
 				const data = await fs.readFile(`_data/${datasetName}.json`, "utf-8");
 				const dataset: Section[] = JSON.parse(data);
 
-				// console.log(dataset);
+				const filteredData = filterData(dataset, where);
 
-				const output = filterData(dataset, where);
+				const selectedData = filteredData.map((row) => {
+					const selectedRow: any = {};
 
-				console.log(output);
+					query.OPTIONS.COLUMNS.forEach((column) => {
+						const oldColumn = column.split("_")[1];
+						selectedRow[column] = row[oldColumn];
+					});
+
+					return selectedRow;
+				});
+
+				if (query.OPTIONS.ORDER) {
+					selectedData.sort((a, b) => {
+						const orderKey = query.OPTIONS.ORDER!;
+						return a[orderKey] > b[orderKey] ? 1 : -1;
+					});
+				}
+
+				return selectedData;
 			} catch (err) {
 				console.log(err);
 				throw new InsightError("dataset not found");
@@ -181,7 +195,6 @@ export default class InsightFacade implements IInsightFacade {
 		} else {
 			throw new InsightError("Invalid JSON");
 		}
-		throw new InsightError("Other error");
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
@@ -293,17 +306,33 @@ function filterData(dataset: any[], where: WhereObject): any[] {
 }
 
 function parseWhereObject(row: any, where: WhereObject): boolean {
+	// console.log(where);
 	if ("IS" in where) {
-		console.log(Object.entries(where.IS!)[0]);
+		//console.log(Object.entries(where.IS!)[0]);
 		const [skey, value] = Object.entries(where.IS!)[0];
 		const key = skey.split("_")[1];
-		return row[key].equals(value);
+		return row[key].startsWith(value);
 	} else if ("GT" in where) {
-		console.log(Object.entries(where.GT!)[0]);
+		//console.log(Object.entries(where.GT!)[0]);
 		const [mkey, value] = Object.entries(where.GT!)[0];
 		const key = mkey.split("_")[1];
 		return row[key] > value;
+	} else if ("LT" in where) {
+		//console.log(Object.entries(where.GT!)[0]);
+		const [mkey, value] = Object.entries(where.LT!)[0];
+		const key = mkey.split("_")[1];
+		return row[key] < value;
+	} else if ("EQ" in where) {
+		//console.log(Object.entries(where.GT!)[0]);
+		const [mkey, value] = Object.entries(where.EQ!)[0];
+		const key = mkey.split("_")[1];
+		return row[key] === value;
+	} else if ("AND" in where) {
+		return where.AND!.every((child) => parseWhereObject(row, child));
+	} else if ("OR" in where) {
+		return where.OR!.some((child) => parseWhereObject(row, child));
+	} else if ("NOT" in where) {
+		return !parseWhereObject(row, where.NOT!);
 	}
-
 	return true;
 }
