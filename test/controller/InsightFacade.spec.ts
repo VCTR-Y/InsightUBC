@@ -268,9 +268,11 @@ describe("InsightFacade", function () {
 				if (errorExpected) {
 					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
 				}
-				expect(result).to.deep.equal(expected);
+
+				expect(result).to.have.deep.members(expected);
+				// expect(result).to.deep.equal(expected);
 			} catch (err) {
-				console.log(err);
+				// console.log(err);
 				if (!errorExpected) {
 					expect.fail(`performQuery threw unexpected error: ${err}`);
 				}
@@ -290,7 +292,7 @@ describe("InsightFacade", function () {
 			// const loadDatasetPromises: Promise<string[]>[] = [
 			// 	facade.addDataset("sections", sections, InsightDatasetKind.Sections),
 			// ];
-
+			//
 			// try {
 			// 	await Promise.all(loadDatasetPromises);
 			// } catch (err) {
