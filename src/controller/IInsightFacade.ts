@@ -15,6 +15,49 @@ export interface InsightDataset {
 	numRows: number;
 }
 
+export interface Section {
+	title: string;
+	uuid: string;
+	instructor: string;
+	audit: number;
+	year: number;
+	id: string;
+	pass: number;
+	fail: number;
+	avg: number;
+	dept: string;
+}
+
+export interface MCOMPARATOR {
+	GT?: Record<string, number>;
+	LT?: Record<string, number>;
+	EQ?: Record<string, number>;
+}
+
+export interface SCOMPARATOR {
+	IS?: Record<string, string>;
+}
+
+export type FILTER = SCOMPARATOR | MCOMPARATOR | LOGICCOMPARATOR;
+
+export interface LOGICCOMPARATOR {
+	AND?: FILTER[];
+	OR?: FILTER[];
+	NOT?: FILTER;
+}
+
+export type WhereObject = FILTER;
+
+export interface OptionsObject {
+	COLUMNS: string[];
+	ORDER?: string;
+}
+
+export interface QueryObject {
+	WHERE: WhereObject;
+	OPTIONS: OptionsObject;
+}
+
 export type InsightResult = Record<string, string | number>;
 
 export class InsightError extends Error {
