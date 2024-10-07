@@ -5,6 +5,7 @@ import {
 	InsightError,
 	InsightResult,
 	NotFoundError,
+	ResultTooLargeError,
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import fs from "fs-extra";
@@ -167,29 +168,20 @@ export default class InsightFacade implements IInsightFacade {
 				const data = await fs.readFile(`data/${datasetName}.json`, "utf-8");
 				const dataset: Section[] = JSON.parse(data);
 
-				const filteredData = filterData(dataset, where);
-
-				const selectedData = filteredData.map((row) => {
-					const selectedRow: any = {};
-
-					query.OPTIONS.COLUMNS.forEach((column) => {
-						const oldColumn = column.split("_")[1];
-						selectedRow[column] = row[oldColumn];
-					});
-
-					return selectedRow;
-				});
-
-				if (query.OPTIONS.ORDER) {
-					selectedData.sort((a, b) => {
-						const orderKey = query.OPTIONS.ORDER!;
-						return a[orderKey] > b[orderKey] ? 1 : -1;
-					});
+				const filteredData = filterData(dataset, where, datasetName);
+				const maxResults = 5000;
+				if (filteredData.length > maxResults) {
+					throw new ResultTooLargeError();
 				}
+				const selectedData = selectAndOrder(filteredData);
 
 				return selectedData;
-			} catch (_err) {
+			} catch (err) {
 				// console.log(err);
+				if (err instanceof ResultTooLargeError) {
+					throw new ResultTooLargeError("Too many results");
+				}
+
 				throw new InsightError("dataset not found");
 			}
 		} else {
@@ -271,7 +263,8 @@ function isOptionsObject(object: any): object is OptionsObject {
 		typeof object === "object" &&
 		object !== null &&
 		Array.isArray(object.COLUMNS) &&
-		(typeof object.ORDER === "string" || object.ORDER === undefined)
+		(typeof object.ORDER === "string" || object.ORDER === undefined) &&
+		Object.keys(object).every((key) => key === "COLUMNS" || key === "ORDER")
 	);
 }
 
@@ -299,40 +292,97 @@ function isLOGICCOMPARATOR(object: any): object is SCOMPARATOR {
 	);
 }
 
-function filterData(dataset: any[], where: WhereObject): any[] {
+function filterData(dataset: any[], where: WhereObject, datasetName: string): any[] {
 	return dataset.filter((row) => {
-		return parseWhereObject(row, where);
+		return parseWhereObject(row, where, datasetName);
 	});
 }
 
-function parseWhereObject(row: any, where: WhereObject): boolean {
-	// console.log(where);
+function parseWhereObject(row: any, where: WhereObject, datasetName: string): boolean {
 	if ("IS" in where) {
-		//console.log(Object.entries(where.IS!)[0]);
-		const [skey, value] = Object.entries(where.IS!)[0];
-		const key = skey.split("_")[1];
-		return row[key].startsWith(value.replace("*", ""));
+		return handleIS(row, where, datasetName);
 	} else if ("GT" in where) {
-		//console.log(Object.entries(where.GT!)[0]);
 		const [mkey, value] = Object.entries(where.GT!)[0];
+		if (mkey.split("_")[0] !== datasetName) {
+			throw new InsightError("wrong dataset");
+		}
 		const key = mkey.split("_")[1];
 		return row[key] > value;
 	} else if ("LT" in where) {
-		//console.log(Object.entries(where.GT!)[0]);
 		const [mkey, value] = Object.entries(where.LT!)[0];
+		if (mkey.split("_")[0] !== datasetName) {
+			throw new InsightError("wrong dataset");
+		}
 		const key = mkey.split("_")[1];
 		return row[key] < value;
 	} else if ("EQ" in where) {
-		//console.log(Object.entries(where.GT!)[0]);
 		const [mkey, value] = Object.entries(where.EQ!)[0];
+		if (mkey.split("_")[0] !== datasetName) {
+			throw new InsightError("wrong dataset");
+		}
 		const key = mkey.split("_")[1];
 		return row[key] === value;
 	} else if ("AND" in where) {
-		return where.AND!.every((child) => parseWhereObject(row, child));
+		return where.AND!.every((child) => parseWhereObject(row, child, datasetName));
 	} else if ("OR" in where) {
-		return where.OR!.some((child) => parseWhereObject(row, child));
+		return where.OR!.some((child) => parseWhereObject(row, child, datasetName));
 	} else if ("NOT" in where) {
-		return !parseWhereObject(row, where.NOT!);
+		return !parseWhereObject(row, where.NOT!, datasetName);
 	}
 	return true;
+}
+
+function handleIS(row: any, where: WhereObject, datasetName: string): boolean {
+	if ("IS" in where) {
+		const [skey, value] = Object.entries(where.IS!)[0];
+
+		if (skey.split("_")[0] !== datasetName) {
+			throw new InsightError("wrong dataset");
+		}
+		const key = skey.split("_")[1];
+
+		const startsWithWildcard = value.startsWith("*");
+		const endsWithWildcard = value.endsWith("*");
+
+		const cleanValue = value.replaceAll("*", "");
+
+		// if (cleanValue.length === 0) {
+		// 	throw new InsightError("inputstring can't be empty");
+		// }
+
+		// console.log(row[key]);
+		// console.log(cleanValue);
+		if (startsWithWildcard && endsWithWildcard) {
+			return row[key].includes(cleanValue);
+		} else if (startsWithWildcard) {
+			return row[key].endsWith(cleanValue);
+		} else if (endsWithWildcard) {
+			return row[key].startsWith(cleanValue);
+		} else {
+			return row[key] === cleanValue;
+		}
+	}
+	return true;
+}
+
+function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
+	const selectedData = filteredData.map((row) => {
+		const selectedRow: any = {};
+
+		query.OPTIONS.COLUMNS.forEach((column) => {
+			const oldColumn = column.split("_")[1];
+			selectedRow[column] = row[oldColumn];
+		});
+
+		return selectedRow;
+	});
+
+	if (query.OPTIONS.ORDER) {
+		selectedData.sort((a, b) => {
+			const orderKey = query.OPTIONS.ORDER!;
+			return a[orderKey] > b[orderKey] ? 1 : -1;
+		});
+	}
+
+	return selectedData;
 }
