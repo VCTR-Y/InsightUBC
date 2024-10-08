@@ -25,6 +25,7 @@ export async function getContentFromArchives(name: string): Promise<string> {
  */
 export async function clearDisk(): Promise<void> {
 	await fs.remove(persistDir);
+	await fs.remove("./datasets");
 }
 
 /**

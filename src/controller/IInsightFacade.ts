@@ -81,6 +81,50 @@ export class ResultTooLargeError extends Error {
 	}
 }
 
+export function isQuery(object: any): object is QueryObject {
+	return (
+		typeof object === "object" && object !== null && isWhereObject(object.WHERE) && isOptionsObject(object.OPTIONS)
+	);
+}
+
+function isWhereObject(object: any): object is WhereObject {
+	return isFilterObject(object);
+}
+
+function isOptionsObject(object: any): object is OptionsObject {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		Array.isArray(object.COLUMNS) &&
+		(typeof object.ORDER === "string" || object.ORDER === undefined) &&
+		Object.keys(object).every((key) => key === "COLUMNS" || key === "ORDER")
+	);
+}
+
+function isFilterObject(object: any): object is FILTER {
+	return isSCOMPARATOR(object) || isMCOMPARATOR(object) || isLOGICCOMPARATOR(object);
+}
+
+function isSCOMPARATOR(object: any): object is SCOMPARATOR {
+	return typeof object === "object" && object !== null && object.IS !== undefined;
+}
+
+function isMCOMPARATOR(object: any): object is SCOMPARATOR {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		(object.GT !== undefined || object.LT !== undefined || object.EQ !== undefined)
+	);
+}
+
+function isLOGICCOMPARATOR(object: any): object is SCOMPARATOR {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		(object.AND !== undefined || object.OR !== undefined || object.NOT !== undefined)
+	);
+}
+
 export interface IInsightFacade {
 	/**
 	 * Add a dataset to insightUBC.
