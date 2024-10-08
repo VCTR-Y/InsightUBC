@@ -159,7 +159,7 @@ describe("InsightFacade", function () {
 		afterEach(async function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
-			await clearDisk();
+			// await clearDisk();
 		});
 
 		it("should list one dataset", async function () {
@@ -170,6 +170,62 @@ describe("InsightFacade", function () {
 				expect(datasets).to.deep.equal([
 					{
 						id: "ubc",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+			} catch (_err) {
+				expect.fail("Should not throw an error.");
+			}
+		});
+
+		it("multiple instances of InsightFacade", async function () {
+			try {
+				await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+				const testFacade: InsightFacade = new InsightFacade();
+				await testFacade.addDataset("sfu", sections, InsightDatasetKind.Sections);
+				const datasets = await facade.listDatasets();
+				const datasets1 = await testFacade.listDatasets();
+
+				expect(datasets).to.deep.equal([
+					{
+						id: "ubc",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+					{
+						id: "sfu",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+				expect(datasets1).to.deep.equal([
+					{
+						id: "ubc",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+					{
+						id: "sfu",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+
+				await testFacade.removeDataset("ubc");
+				const datasets2 = await facade.listDatasets();
+				const datasets3 = await testFacade.listDatasets();
+
+				expect(datasets2).to.deep.equal([
+					{
+						id: "sfu",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+				expect(datasets3).to.deep.equal([
+					{
+						id: "sfu",
 						kind: InsightDatasetKind.Sections,
 						numRows: 64612,
 					},
