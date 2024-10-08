@@ -159,7 +159,7 @@ describe("InsightFacade", function () {
 		afterEach(async function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
-			// await clearDisk();
+			await clearDisk();
 		});
 
 		it("should list one dataset", async function () {
