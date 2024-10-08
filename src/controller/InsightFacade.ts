@@ -30,20 +30,20 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("Invalid id/content/kind");
 		}
 
-		const directory = path.resolve(__dirname, "../../datasets");
-		const filePath = path.join(directory, `datasets.json`);
-		const fileExists = await fs.pathExists(filePath);
-
-		if (fileExists) {
-			const datasetsArray = await fs.readJSON(filePath);
-			datasetsArray.forEach((dataset: InsightDataset) => {
-				this.datasets.set(dataset.id, {
-					id: dataset.id,
-					kind: dataset.kind,
-					numRows: dataset.numRows,
-				});
-			});
-		}
+		// const directory = path.resolve(__dirname, "../../datasets");
+		// const filePath = path.join(directory, `datasets.json`);
+		// const fileExists = await fs.pathExists(filePath);
+		//
+		// if (fileExists) {
+		// 	const datasetsArray = await fs.readJSON(filePath);
+		// 	datasetsArray.forEach((dataset: InsightDataset) => {
+		// 		this.datasets.set(dataset.id, {
+		// 			id: dataset.id,
+		// 			kind: dataset.kind,
+		// 			numRows: dataset.numRows,
+		// 		});
+		// 	});
+		// }
 
 		const sections: any[] = await this.getSectionsFromContent(content);
 
