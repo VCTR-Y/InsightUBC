@@ -1,17 +1,15 @@
 import {
-	FILTER,
 	IInsightFacade,
 	InsightDataset,
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
 	NotFoundError,
-	OptionsObject,
 	QueryObject,
 	ResultTooLargeError,
-	SCOMPARATOR,
 	Section,
 	WhereObject,
+	isQuery,
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import fs from "fs-extra";
@@ -33,12 +31,11 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		const sections: any[] = await this.getSectionsFromContent(content);
-		const numRows = sections.length;
 
 		const dataset: InsightDataset = {
 			id,
 			kind,
-			numRows,
+			numRows: sections.length,
 		};
 
 		this.datasets.set(id, dataset);
@@ -50,31 +47,21 @@ export default class InsightFacade implements IInsightFacade {
 
 	private async checkValidDataset(id: string, content: string, kind: InsightDatasetKind): Promise<Boolean> {
 		if (id === null || id.includes("_") || id.trim().length === 0) {
-			// throw new InsightError("Invalid Dataset ID");
 			return false;
 		}
 
 		if (this.datasets.has(id)) {
-			// throw new InsightError("Dataset Already Exists");
 			return false;
 		}
 
 		if (content === null || content.trim().length === 0) {
-			// throw new InsightError("Invalid Content");
 			return false;
 		}
 
 		if (!this.isBase64(content)) {
-			// throw new InsightError("Content is not in Base64");
 			return false;
 		}
-
-		if (kind !== InsightDatasetKind.Sections) {
-			// throw new InsightError("Invalid Dataset Kind");
-			return false;
-		}
-
-		return true;
+		return kind === InsightDatasetKind.Sections;
 	}
 
 	private async getSectionsFromContent(content: string): Promise<any[]> {
@@ -99,11 +86,13 @@ export default class InsightFacade implements IInsightFacade {
 				if (!fileData) {
 					return;
 				}
+
 				const parsedData = JSON.parse(fileData);
 
 				if (!parsedData.result || parsedData.rank === undefined) {
 					throw new InsightError("result/rank key not found");
 				}
+
 				if (parsedData && Array.isArray(parsedData.result) && parsedData.result.length > 0) {
 					const datasetMapped = this.renameKeys(parsedData.result);
 					sections.push(...datasetMapped);
@@ -114,17 +103,19 @@ export default class InsightFacade implements IInsightFacade {
 			}
 		});
 		await Promise.all(promises);
+
 		return sections;
 	}
 
 	private renameKeys(sections: any[]): any[] {
+		const def = 1900;
 		return sections.map((item: any) => ({
 			uuid: item.id,
 			id: item.Course,
 			title: item.Title,
 			instructor: item.Professor,
 			dept: item.Subject,
-			year: item.Year,
+			year: item.Section === "overall" ? def : Number(item.Year),
 			avg: item.Avg,
 			pass: item.Pass,
 			fail: item.Fail,
@@ -141,8 +132,32 @@ export default class InsightFacade implements IInsightFacade {
 		});
 
 		const filePath = path.join(directory, `${id}.json`);
+
 		try {
 			await fs.outputJSON(filePath, sections, { spaces: 2 });
+		} catch (_err) {
+			throw new InsightError("Failed to write dataset to disk");
+		}
+		await this.addDatasetsMapToDisk();
+	}
+
+	private async addDatasetsMapToDisk(): Promise<void> {
+		const directory = path.resolve(__dirname, "../../datasets");
+		fs.mkdir(directory, { recursive: true }, (err: any) => {
+			if (err) {
+				throw new InsightError("Something went wrong creating the directory");
+			}
+		});
+
+		const filePath = path.join(directory, `datasets.json`);
+		const datasetsArray = Array.from(this.datasets.entries()).map(([_key, value]) => ({
+			id: value.id,
+			kind: value.kind,
+			numRows: value.numRows,
+		}));
+
+		try {
+			await fs.outputJSON(filePath, datasetsArray, { spaces: 2 });
 		} catch (_err) {
 			throw new InsightError("Failed to write dataset to disk");
 		}
@@ -154,7 +169,6 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async removeDataset(id: string): Promise<string> {
-		// TODO: Remove this once you implement the methods!
 		if (id === null || id.includes("_") || id.trim().length === 0) {
 			throw new InsightError("Invalid Dataset ID");
 		}
@@ -164,15 +178,26 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		const directory = path.resolve(__dirname, "../../data");
+		const datasetsDir = path.resolve(__dirname, "../../datasets");
 		const filePath = path.join(directory, `${id}.json`);
+		const datasetsPath = path.join(datasetsDir, "datasets.json");
 
 		try {
 			await fs.remove(filePath);
 		} catch (_err) {
 			throw new InsightError("Couldn't remove dataset from disk");
 		}
-
+		try {
+			const datasetsList: InsightDataset[] = await fs.readJSON(datasetsPath);
+			const updatedDatasetsList = datasetsList.filter((dataset) => {
+				return dataset.id !== id;
+			});
+			await fs.writeJSON(datasetsPath, updatedDatasetsList, { spaces: 2 });
+		} catch (_err) {
+			throw new InsightError("Couldn't update datasets.json");
+		}
 		this.datasets.delete(id);
+
 		return id;
 	}
 
@@ -200,7 +225,6 @@ export default class InsightFacade implements IInsightFacade {
 				if (err instanceof ResultTooLargeError) {
 					throw new ResultTooLargeError("Too many results");
 				}
-
 				throw new InsightError("dataset not found");
 			}
 		} else {
@@ -209,63 +233,20 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
-		// TODO: Remove this once you implement the methods!
-		const list: InsightDataset[] = [];
+		const directory = path.resolve(__dirname, "../../datasets/");
+		const filePath = path.join(directory, "datasets.json");
 
-		this.datasets.forEach((dataset) => {
-			list.push({
+		try {
+			const datasetsArray = await fs.readJSON(filePath);
+			return datasetsArray.map((dataset: InsightDataset) => ({
 				id: dataset.id,
 				kind: dataset.kind,
 				numRows: dataset.numRows,
-			});
-		});
-
-		return list;
+			}));
+		} catch (_err) {
+			throw new InsightError("Something went wrong listing datasets");
+		}
 	}
-}
-
-function isQuery(object: any): object is QueryObject {
-	return (
-		typeof object === "object" && object !== null && isWhereObject(object.WHERE) && isOptionsObject(object.OPTIONS)
-	);
-}
-
-function isWhereObject(object: any): object is WhereObject {
-	return isFilterObject(object);
-}
-
-function isOptionsObject(object: any): object is OptionsObject {
-	return (
-		typeof object === "object" &&
-		object !== null &&
-		Array.isArray(object.COLUMNS) &&
-		(typeof object.ORDER === "string" || object.ORDER === undefined) &&
-		Object.keys(object).every((key) => key === "COLUMNS" || key === "ORDER")
-	);
-}
-
-function isFilterObject(object: any): object is FILTER {
-	return isSCOMPARATOR(object) || isMCOMPARATOR(object) || isLOGICCOMPARATOR(object);
-}
-
-function isSCOMPARATOR(object: any): object is SCOMPARATOR {
-	return typeof object === "object" && object !== null && object.IS !== undefined;
-}
-
-function isMCOMPARATOR(object: any): object is SCOMPARATOR {
-	return (
-		typeof object === "object" &&
-		object !== null &&
-		(object.GT !== undefined || object.LT !== undefined || object.EQ !== undefined)
-	);
-}
-
-function isLOGICCOMPARATOR(object: any): object is SCOMPARATOR {
-	return (
-		typeof object === "object" &&
-		object !== null &&
-		(object.AND !== undefined || object.OR !== undefined || object.NOT !== undefined)
-	);
 }
 
 function filterData(dataset: any[], where: WhereObject, datasetName: string): any[] {
