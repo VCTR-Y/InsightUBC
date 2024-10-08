@@ -125,6 +125,44 @@ function isLOGICCOMPARATOR(object: any): object is SCOMPARATOR {
 	);
 }
 
+const mfield = ["avg", "pass", "fail", "audit", "year"];
+const sfield = ["dept", "id", "instructor", "title", "uuid"];
+
+let keys: any[] = [];
+keys = keys.concat(mfield, sfield);
+
+export function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
+	const selectedData = filteredData.map((row) => {
+		const selectedRow: any = {};
+
+		query.OPTIONS.COLUMNS.forEach((column) => {
+			const oldColumn = column.split("_")[1];
+			if (!keys.includes(oldColumn)) {
+				// console.log(keys);
+				// console.log(oldColumn);
+				throw new InsightError("Invalid key");
+			}
+			selectedRow[column] = row[oldColumn];
+		});
+
+		return selectedRow;
+	});
+
+	if (query.OPTIONS.ORDER) {
+		if (!keys.includes(query.OPTIONS.ORDER.split("_")[1])) {
+			throw new InsightError("Invalid key");
+		}
+		if (!query.OPTIONS.COLUMNS.includes(query.OPTIONS.ORDER)) {
+			throw new InsightError("ORDER not in COLUMNS");
+		}
+		selectedData.sort((a, b) => {
+			const orderKey = query.OPTIONS.ORDER!;
+			return a[orderKey] > b[orderKey] ? 1 : -1;
+		});
+	}
+	return selectedData;
+}
+
 export interface IInsightFacade {
 	/**
 	 * Add a dataset to insightUBC.

@@ -5,7 +5,7 @@ import {
 	InsightError,
 	InsightResult,
 	NotFoundError,
-	QueryObject,
+	selectAndOrder,
 	ResultTooLargeError,
 	Section,
 	WhereObject,
@@ -124,6 +124,7 @@ export default class InsightFacade implements IInsightFacade {
 
 	private renameKeys(sections: any[]): any[] {
 		const def = 1900;
+
 		return sections.map((item: any) => ({
 			uuid: item.id,
 			id: item.Course,
@@ -316,7 +317,13 @@ function handleIS(row: any, where: WhereObject, datasetName: string): boolean {
 		const startsWithWildcard = value.startsWith("*");
 		const endsWithWildcard = value.endsWith("*");
 
-		const cleanValue = value.replaceAll("*", "");
+		const middleAsterisk = value.indexOf("*");
+		if (middleAsterisk > 0 && middleAsterisk < value.length - 1) {
+			throw new InsightError("Middle asterisk");
+		}
+
+		// const cleanValue = value.replaceAll("*", "");
+		const cleanValue = value.replace(/^\*|\*$/g, "");
 
 		if (startsWithWildcard && endsWithWildcard) {
 			return row[key].includes(cleanValue);
@@ -329,25 +336,4 @@ function handleIS(row: any, where: WhereObject, datasetName: string): boolean {
 		}
 	}
 	return true;
-}
-
-function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
-	const selectedData = filteredData.map((row) => {
-		const selectedRow: any = {};
-
-		query.OPTIONS.COLUMNS.forEach((column) => {
-			const oldColumn = column.split("_")[1];
-			selectedRow[column] = row[oldColumn];
-		});
-
-		return selectedRow;
-	});
-
-	if (query.OPTIONS.ORDER) {
-		selectedData.sort((a, b) => {
-			const orderKey = query.OPTIONS.ORDER!;
-			return a[orderKey] > b[orderKey] ? 1 : -1;
-		});
-	}
-	return selectedData;
 }
