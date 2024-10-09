@@ -24,18 +24,18 @@ export default class InsightFacade implements IInsightFacade {
 	private datasets = new Map<string, InsightDataset>();
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		const valid = await this.checkValidDataset(id, content, kind);
-
-		if (!valid) {
-			throw new InsightError("Invalid id/content/kind");
-		}
-
 		const directory = path.resolve(__dirname, "../../datasets");
 		const filePath = path.join(directory, `datasets.json`);
 		const fileExists = await fs.pathExists(filePath);
 
 		if (fileExists) {
 			await this.loadFromDisk(filePath);
+		}
+
+		const valid = await this.checkValidDataset(id, content, kind);
+
+		if (!valid) {
+			throw new InsightError("Invalid id/content/kind");
 		}
 
 		const sections: any[] = await this.getSectionsFromContent(content);
@@ -182,10 +182,6 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("Invalid Dataset ID");
 		}
 
-		if (!this.datasets.has(id)) {
-			throw new NotFoundError("Dataset ID Not Found");
-		}
-
 		const directory = path.resolve(__dirname, "../../data");
 		const datasetsDir = path.resolve(__dirname, "../../datasets");
 		const filePath = path.join(directory, `${id}.json`);
@@ -195,6 +191,10 @@ export default class InsightFacade implements IInsightFacade {
 
 		if (fileExists) {
 			await this.loadFromDisk(datasetsPath);
+		}
+
+		if (!this.datasets.has(id)) {
+			throw new NotFoundError("Dataset ID Not Found");
 		}
 
 		try {

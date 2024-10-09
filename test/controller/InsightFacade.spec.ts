@@ -234,6 +234,26 @@ describe("InsightFacade", function () {
 				expect.fail("Should not throw an error.");
 			}
 		});
+
+		it("multiple instances of InsightFacade v2", async function () {
+			try {
+				await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("sfu", sections, InsightDatasetKind.Sections);
+				const testDataset: InsightFacade = new InsightFacade();
+				await testDataset.removeDataset("sfu");
+				const datasets = await testDataset.listDatasets();
+
+				expect(datasets).to.deep.equal([
+					{
+						id: "ubc",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+			} catch (_err) {
+				expect.fail("Should not throw an error.");
+			}
+		});
 	});
 
 	describe("RemoveDataset", function () {
