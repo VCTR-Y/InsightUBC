@@ -24,7 +24,7 @@ export default class InsightFacade implements IInsightFacade {
 	private datasets = new Map<string, InsightDataset>();
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		const directory = path.resolve(__dirname, "../../datasets");
+		const directory = path.resolve(__dirname, "../../data/datasets");
 		const filePath = path.join(directory, `datasets.json`);
 		const fileExists = await fs.pathExists(filePath);
 
@@ -151,7 +151,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	private async addDatasetsMapToDisk(): Promise<void> {
-		const directory = path.resolve(__dirname, "../../datasets");
+		const directory = path.resolve(__dirname, "../../data/datasets");
 		fs.mkdir(directory, { recursive: true }, (err: any) => {
 			if (err) {
 				throw new InsightError("Something went wrong creating the directory");
@@ -183,7 +183,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		const directory = path.resolve(__dirname, "../../data");
-		const datasetsDir = path.resolve(__dirname, "../../datasets");
+		const datasetsDir = path.resolve(__dirname, "../../data/datasets");
 		const filePath = path.join(directory, `${id}.json`);
 		const datasetsPath = path.join(datasetsDir, "datasets.json");
 
@@ -248,7 +248,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
-		const directory = path.resolve(__dirname, "../../datasets/");
+		const directory = path.resolve(__dirname, "../../data/datasets/");
 		const filePath = path.join(directory, "datasets.json");
 		const fileExists = await fs.pathExists(filePath);
 
@@ -256,13 +256,11 @@ export default class InsightFacade implements IInsightFacade {
 			await this.loadFromDisk(filePath);
 		}
 
+		let dataset: InsightDataset[];
+
 		try {
-			const datasetsArray = await fs.readJSON(filePath);
-			return datasetsArray.map((dataset: InsightDataset) => ({
-				id: dataset.id,
-				kind: dataset.kind,
-				numRows: dataset.numRows,
-			}));
+			dataset = await fs.readJSON(filePath);
+			return dataset;
 		} catch (_err) {
 			throw new InsightError("Something went wrong listing datasets");
 		}

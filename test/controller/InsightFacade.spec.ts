@@ -211,8 +211,8 @@ describe("InsightFacade", function () {
 						numRows: 64612,
 					},
 				]);
-
 				await testFacade.removeDataset("ubc");
+
 				// const datasets2 = await facade.listDatasets();
 				const datasets3 = await testFacade.listDatasets();
 
@@ -239,6 +239,19 @@ describe("InsightFacade", function () {
 			try {
 				await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 				await facade.addDataset("sfu", sections, InsightDatasetKind.Sections);
+				const a = await facade.listDatasets();
+				expect(a).to.deep.equal([
+					{
+						id: "ubc",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+					{
+						id: "sfu",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
 				const testDataset: InsightFacade = new InsightFacade();
 				await testDataset.removeDataset("sfu");
 				const datasets = await testDataset.listDatasets();
