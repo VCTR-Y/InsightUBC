@@ -69,6 +69,11 @@ export default class InsightFacade implements IInsightFacade {
 		if (!this.isBase64(content)) {
 			return false;
 		}
+
+		if (kind === null) {
+			return false;
+		}
+
 		return kind === InsightDatasetKind.Sections;
 	}
 
@@ -78,7 +83,7 @@ export default class InsightFacade implements IInsightFacade {
 		const courses = Object.keys(data.files);
 		const sections: any[] = [];
 
-		if (courses[0] !== "courses/") {
+		if (!courses.includes("courses/")) {
 			throw new InsightError("courses Folder Not Found");
 		}
 
