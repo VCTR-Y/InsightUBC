@@ -163,6 +163,39 @@ export function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
 	return selectedData;
 }
 
+export function handleIS(row: any, where: WhereObject, datasetName: string): boolean {
+	if ("IS" in where) {
+		const [skey, value] = Object.entries(where.IS!)[0];
+
+		if (skey.split("_")[0] !== datasetName) {
+			throw new InsightError("wrong dataset");
+		}
+		const key = skey.split("_")[1];
+
+		const startsWithWildcard = value.startsWith("*");
+		const endsWithWildcard = value.endsWith("*");
+
+		const middleAsterisk = value.indexOf("*");
+		if (middleAsterisk > 0 && middleAsterisk < value.length - 1) {
+			throw new InsightError("Middle asterisk");
+		}
+
+		// const cleanValue = value.replaceAll("*", "");
+		const cleanValue = value.replace(/^\*|\*$/g, "");
+
+		if (startsWithWildcard && endsWithWildcard) {
+			return row[key].includes(cleanValue);
+		} else if (startsWithWildcard) {
+			return row[key].endsWith(cleanValue);
+		} else if (endsWithWildcard) {
+			return row[key].startsWith(cleanValue);
+		} else {
+			return row[key] === cleanValue;
+		}
+	}
+	return true;
+}
+
 export interface IInsightFacade {
 	/**
 	 * Add a dataset to insightUBC.

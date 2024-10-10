@@ -10,6 +10,7 @@ import {
 	Section,
 	WhereObject,
 	isQuery,
+	handleIS,
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import fs from "fs-extra";
@@ -39,6 +40,10 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		const sections: any[] = await this.getSectionsFromContent(content);
+
+		if (sections.length === 0) {
+			throw new InsightError("no valid sections");
+		}
 
 		const dataset: InsightDataset = {
 			id,
@@ -81,47 +86,53 @@ export default class InsightFacade implements IInsightFacade {
 		const zip = new JSZip();
 		const data = await zip.loadAsync(content, { base64: true });
 		const courses = Object.keys(data.files);
-		const sections: any[] = [];
 
 		if (!courses.includes("courses/")) {
 			throw new InsightError("courses Folder Not Found");
 		}
 
 		const coursesFolder = zip.folder("courses");
-
 		if (!coursesFolder || Object.keys(coursesFolder.files).length === 1) {
 			throw new InsightError("courses folder not found or no files found");
 		}
 
-		const promises = Object.entries(coursesFolder.files).map(async ([_relativePath, file]) => {
-			try {
-				const fileData = await file.async("string");
-				if (!fileData) {
-					return;
-				}
+		const sections: any[] = [];
 
-				const parsedData = JSON.parse(fileData);
+		await Promise.all(
+			Object.entries(coursesFolder.files).map(async ([_relativePath, file]) => {
+				try {
+					const fileData = await file.async("string");
+					if (!fileData) {
+						return;
+					}
 
-				if (!parsedData.result || parsedData.rank === undefined) {
-					throw new InsightError("result/rank key not found");
-				}
+					const { result, rank } = JSON.parse(fileData);
+					if (!result || rank === undefined) {
+						throw new InsightError("result/rank key not found");
+					}
 
-				if (parsedData && Array.isArray(parsedData.result) && parsedData.result.length > 0) {
-					const datasetMapped = this.renameKeys(parsedData.result);
+					const datasetMapped = this.renameKeys(result);
+
 					sections.push(...datasetMapped);
-					return parsedData.result.length;
+				} catch {
+					throw new InsightError("Invalid JSON");
 				}
-			} catch (_err) {
-				throw new InsightError("Invalid JSON");
-			}
-		});
-		await Promise.all(promises);
+			})
+		);
 
 		return sections;
 	}
 
 	private renameKeys(sections: any[]): any[] {
 		const def = 1900;
+		const requiredFields = ["id", "Course", "Title", "Professor", "Subject", "Year", "Avg", "Pass", "Fail", "Audit"];
+		for (let i = 0; i < sections.length; i++) {
+			const section = sections[i];
+			if (!requiredFields.every((field) => section[field] !== undefined && section[field] !== null)) {
+				console.log(section);
+				sections.splice(i, 1);
+			}
+		}
 
 		return sections.map((item: any) => ({
 			uuid: item.id,
@@ -319,39 +330,6 @@ function parseWhereObject(row: any, where: WhereObject, datasetName: string): bo
 		return where.OR!.some((child) => parseWhereObject(row, child, datasetName));
 	} else if ("NOT" in where) {
 		return !parseWhereObject(row, where.NOT!, datasetName);
-	}
-	return true;
-}
-
-function handleIS(row: any, where: WhereObject, datasetName: string): boolean {
-	if ("IS" in where) {
-		const [skey, value] = Object.entries(where.IS!)[0];
-
-		if (skey.split("_")[0] !== datasetName) {
-			throw new InsightError("wrong dataset");
-		}
-		const key = skey.split("_")[1];
-
-		const startsWithWildcard = value.startsWith("*");
-		const endsWithWildcard = value.endsWith("*");
-
-		const middleAsterisk = value.indexOf("*");
-		if (middleAsterisk > 0 && middleAsterisk < value.length - 1) {
-			throw new InsightError("Middle asterisk");
-		}
-
-		// const cleanValue = value.replaceAll("*", "");
-		const cleanValue = value.replace(/^\*|\*$/g, "");
-
-		if (startsWithWildcard && endsWithWildcard) {
-			return row[key].includes(cleanValue);
-		} else if (startsWithWildcard) {
-			return row[key].endsWith(cleanValue);
-		} else if (endsWithWildcard) {
-			return row[key].startsWith(cleanValue);
-		} else {
-			return row[key] === cleanValue;
-		}
 	}
 	return true;
 }

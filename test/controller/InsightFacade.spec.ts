@@ -147,6 +147,15 @@ describe("InsightFacade", function () {
 			expect(result1).to.have.members(["ubc"]);
 			expect(result2).to.have.members(["ubc", "sfu"]);
 		});
+
+		// it("should successfully add multiple valid datasets - persist", async function () {
+		// 	const result1 = await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+		// 	expect(result1).to.have.members(["ubc"]);
+		// 	await new InsightFacade().addDataset("sfu", sections, InsightDatasetKind.Sections);
+		// 	const testFacade = new InsightFacade();
+		// 	const result2 = await testFacade.addDataset("uvic", sections, InsightDatasetKind.Sections);
+		// 	expect(result2).to.have.members(["ubc", "sfu", "uvic"]);
+		// });
 	});
 
 	describe("ListDatasets", function () {
@@ -174,7 +183,8 @@ describe("InsightFacade", function () {
 						numRows: 64612,
 					},
 				]);
-			} catch (_err) {
+			} catch (err) {
+				console.log(err);
 				expect.fail("Should not throw an error.");
 			}
 		});
@@ -333,6 +343,21 @@ describe("InsightFacade", function () {
 				expect.fail("Should not throw an error.");
 			}
 		});
+
+		// it("should remove dataset - persist 1", async function () {
+		// 	try {
+		// 		await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+		//
+		// 		const facade2 = new InsightFacade();
+		// 		await facade2.removeDataset("ubc");
+		//
+		// 		const datasets = await new InsightFacade().listDatasets();
+		// 		expect(datasets.length).to.eq(0);
+		// 	} catch (err) {
+		// 		console.log(err);
+		// 		expect.fail("Should not throw an error.");
+		// 	}
+		// });
 	});
 
 	describe("PerformQuery", function () {
