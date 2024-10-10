@@ -150,7 +150,6 @@ describe("InsightFacade", function () {
 	});
 
 	describe("ListDatasets", function () {
-		this.timeout(10000);
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
