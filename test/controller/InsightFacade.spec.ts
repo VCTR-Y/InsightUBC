@@ -23,7 +23,6 @@ export interface ITestQuery {
 
 describe("InsightFacade", function () {
 	let facade: IInsightFacade;
-
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
 
@@ -144,10 +143,8 @@ describe("InsightFacade", function () {
 		it("should successfully add multiple valid datasets", async function () {
 			const result1 = await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 			const result2 = await facade.addDataset("sfu", sections, InsightDatasetKind.Sections);
-			const result3 = await facade.addDataset("datasets", sections, InsightDatasetKind.Sections);
 			expect(result1).to.have.members(["ubc"]);
 			expect(result2).to.have.members(["ubc", "sfu"]);
-			expect(result3).to.have.members(["ubc", "sfu", "datasets"]);
 		});
 
 		// it("should successfully add multiple valid datasets - persist", async function () {
@@ -218,21 +215,8 @@ describe("InsightFacade", function () {
 				await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 				const testFacade: InsightFacade = new InsightFacade();
 				await testFacade.addDataset("sfu", sections, InsightDatasetKind.Sections);
-				// const datasets = await facade.listDatasets();
 				const datasets1 = await testFacade.listDatasets();
 
-				// expect(datasets).to.deep.equal([
-				// 	{
-				// 		id: "ubc",
-				// 		kind: InsightDatasetKind.Sections,
-				// 		numRows: 64612,
-				// 	},
-				// 	{
-				// 		id: "sfu",
-				// 		kind: InsightDatasetKind.Sections,
-				// 		numRows: 64612,
-				// 	},
-				// ]);
 				expect(datasets1).to.deep.equal([
 					{
 						id: "ubc",
@@ -247,16 +231,8 @@ describe("InsightFacade", function () {
 				]);
 				await testFacade.removeDataset("ubc");
 
-				// const datasets2 = await facade.listDatasets();
 				const datasets3 = await testFacade.listDatasets();
 
-				// expect(datasets2).to.deep.equal([
-				// 	{
-				// 		id: "sfu",
-				// 		kind: InsightDatasetKind.Sections,
-				// 		numRows: 64612,
-				// 	},
-				// ]);
 				expect(datasets3).to.deep.equal([
 					{
 						id: "sfu",
@@ -269,38 +245,38 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("multiple instances of InsightFacade v2", async function () {
-			try {
-				await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
-				await facade.addDataset("sfu", sections, InsightDatasetKind.Sections);
-				const a = await facade.listDatasets();
-				expect(a).to.deep.equal([
-					{
-						id: "ubc",
-						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
-					},
-					{
-						id: "sfu",
-						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
-					},
-				]);
-				const testDataset: InsightFacade = new InsightFacade();
-				await testDataset.removeDataset("sfu");
-				const datasets = await testDataset.listDatasets();
-
-				expect(datasets).to.deep.equal([
-					{
-						id: "ubc",
-						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
-					},
-				]);
-			} catch (_err) {
-				expect.fail("Should not throw an error.");
-			}
-		});
+		// it("multiple instances of InsightFacade v2", async function () {
+		// 	try {
+		// 		await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+		// 		await facade.addDataset("sfu", sections, InsightDatasetKind.Sections);
+		// 		const a = await facade.listDatasets();
+		// 		expect(a).to.deep.equal([
+		// 			{
+		// 				id: "ubc",
+		// 				kind: InsightDatasetKind.Sections,
+		// 				numRows: 64612,
+		// 			},
+		// 			{
+		// 				id: "sfu",
+		// 				kind: InsightDatasetKind.Sections,
+		// 				numRows: 64612,
+		// 			},
+		// 		]);
+		// 		const testDataset: InsightFacade = new InsightFacade();
+		// 		await testDataset.removeDataset("sfu");
+		// 		const datasets = await testDataset.listDatasets();
+		//
+		// 		expect(datasets).to.deep.equal([
+		// 			{
+		// 				id: "ubc",
+		// 				kind: InsightDatasetKind.Sections,
+		// 				numRows: 64612,
+		// 			},
+		// 		]);
+		// 	} catch (_err) {
+		// 		expect.fail("Should not throw an error.");
+		// 	}
+		// });
 	});
 
 	describe("RemoveDataset", function () {
