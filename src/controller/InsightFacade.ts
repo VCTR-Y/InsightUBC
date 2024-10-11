@@ -54,9 +54,9 @@ export default class InsightFacade implements IInsightFacade {
 			numRows: sections.length,
 		};
 
-		this.datasets.set(id, dataset);
-
 		await this.addDatasetToDisk(id, sections);
+
+		await this.addDatasetsMapToDisk(id, dataset);
 
 		return Array.from(this.datasets.keys());
 	}
@@ -166,16 +166,18 @@ export default class InsightFacade implements IInsightFacade {
 		} catch (_err) {
 			throw new InsightError("Failed to write dataset to disk");
 		}
-		await this.addDatasetsMapToDisk();
+		// await this.addDatasetsMapToDisk();
 	}
 
-	private async addDatasetsMapToDisk(): Promise<void> {
+	private async addDatasetsMapToDisk(id: string, dataset: InsightDataset): Promise<void> {
 		const directory = path.resolve(__dirname, "../../data/datasets");
 		fs.mkdir(directory, { recursive: true }, (err: any) => {
 			if (err) {
 				throw new InsightError("Something went wrong creating the directory");
 			}
 		});
+
+		this.datasets.set(id, dataset);
 
 		const filePath = path.join(directory, `datasets.json`);
 		const datasetsArray = Array.from(this.datasets.entries()).map(([_key, value]) => ({
@@ -187,6 +189,7 @@ export default class InsightFacade implements IInsightFacade {
 		try {
 			await fs.outputJSON(filePath, datasetsArray, { spaces: 2 });
 		} catch (_err) {
+			this.datasets.delete(id);
 			throw new InsightError("Failed to write dataset to disk");
 		}
 	}
