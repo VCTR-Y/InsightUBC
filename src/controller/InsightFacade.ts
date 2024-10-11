@@ -317,7 +317,6 @@ function filterData(dataset: any[], where: WhereObject, datasetName: string): an
 }
 
 function parseWhereObject(row: any, where: WhereObject, datasetName: string): boolean {
-	console.log(where);
 	if (!isFilterObject(where)) {
 		throw new InsightError("Invalid object");
 	}
