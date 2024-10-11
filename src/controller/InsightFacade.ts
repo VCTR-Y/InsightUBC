@@ -11,6 +11,8 @@ import {
 	WhereObject,
 	isQuery,
 	handleIS,
+	handleMCOMPARATOR,
+	isFilterObject,
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import fs from "fs-extra";
@@ -315,35 +317,30 @@ function filterData(dataset: any[], where: WhereObject, datasetName: string): an
 }
 
 function parseWhereObject(row: any, where: WhereObject, datasetName: string): boolean {
+	console.log(where);
+	if (!isFilterObject(where)) {
+		throw new InsightError("Invalid object");
+	}
 	if ("IS" in where) {
 		return handleIS(row, where, datasetName);
 	} else if ("GT" in where) {
-		const [mkey, value] = Object.entries(where.GT!)[0];
-		if (mkey.split("_")[0] !== datasetName) {
-			throw new InsightError("wrong dataset");
-		}
-		const key = mkey.split("_")[1];
-		return row[key] > value;
+		return handleMCOMPARATOR(row, where, datasetName);
 	} else if ("LT" in where) {
-		const [mkey, value] = Object.entries(where.LT!)[0];
-		if (mkey.split("_")[0] !== datasetName) {
-			throw new InsightError("wrong dataset");
-		}
-		const key = mkey.split("_")[1];
-		return row[key] < value;
+		return handleMCOMPARATOR(row, where, datasetName);
 	} else if ("EQ" in where) {
-		const [mkey, value] = Object.entries(where.EQ!)[0];
-		if (mkey.split("_")[0] !== datasetName) {
-			throw new InsightError("wrong dataset");
-		}
-		const key = mkey.split("_")[1];
-		return row[key] === value;
+		return handleMCOMPARATOR(row, where, datasetName);
 	} else if ("AND" in where) {
+		if (where.AND!.length === 0) {
+			throw new InsightError("AND can't be empty");
+		}
 		return where.AND!.every((child) => parseWhereObject(row, child, datasetName));
 	} else if ("OR" in where) {
+		if (where.OR!.length === 0) {
+			throw new InsightError("OR can't be empty");
+		}
 		return where.OR!.some((child) => parseWhereObject(row, child, datasetName));
 	} else if ("NOT" in where) {
 		return !parseWhereObject(row, where.NOT!, datasetName);
 	}
-	return true;
+	throw new InsightError("Invalid object");
 }

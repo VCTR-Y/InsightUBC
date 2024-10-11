@@ -470,6 +470,8 @@ describe("InsightFacade", function () {
 		it("[invalid/invalid8.json] Query with invalid ORDER type", checkQuery);
 		it("[invalid/invalid9.json] Query with invalid COLUMN type", checkQuery);
 		it("[invalid/invalid10.json] Query with invalid keys in OPTIONS", checkQuery);
+		it("[invalid/invalid11.json] Query with invalid and contents", checkQuery);
+		it("[invalid/invalid12.json] Query with invalid filter", checkQuery);
 		it("[invalid/nonobject.json] Query missing object", checkQuery);
 		it("[invalid/nonexistent.json] Query with nonexistent dataset", checkQuery);
 		it("[invalid/incorrect.json] Query with invalid key", checkQuery);

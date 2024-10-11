@@ -101,8 +101,11 @@ function isOptionsObject(object: any): object is OptionsObject {
 	);
 }
 
-function isFilterObject(object: any): object is FILTER {
-	return isSCOMPARATOR(object) || isMCOMPARATOR(object) || isLOGICCOMPARATOR(object);
+export function isFilterObject(object: any): object is FILTER {
+	if (Object.keys(object).length === 1) {
+		return isSCOMPARATOR(object) || isMCOMPARATOR(object) || isLOGICCOMPARATOR(object);
+	}
+	return false;
 }
 
 function isSCOMPARATOR(object: any): object is SCOMPARATOR {
@@ -125,8 +128,8 @@ function isLOGICCOMPARATOR(object: any): object is SCOMPARATOR {
 	);
 }
 
-const mfield = ["avg", "pass", "fail", "audit", "year"];
-const sfield = ["dept", "id", "instructor", "title", "uuid"];
+export const mfield = ["avg", "pass", "fail", "audit", "year"];
+export const sfield = ["dept", "id", "instructor", "title", "uuid"];
 
 let keys: any[] = [];
 keys = keys.concat(mfield, sfield);
@@ -138,8 +141,6 @@ export function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
 		query.OPTIONS.COLUMNS.forEach((column) => {
 			const oldColumn = column.split("_")[1];
 			if (!keys.includes(oldColumn)) {
-				// console.log(keys);
-				// console.log(oldColumn);
 				throw new InsightError("Invalid key");
 			}
 			selectedRow[column] = row[oldColumn];
@@ -172,6 +173,10 @@ export function handleIS(row: any, where: WhereObject, datasetName: string): boo
 		}
 		const key = skey.split("_")[1];
 
+		if (!sfield.includes(key)) {
+			throw new InsightError("wrong key");
+		}
+
 		const startsWithWildcard = value.startsWith("*");
 		const endsWithWildcard = value.endsWith("*");
 
@@ -194,6 +199,29 @@ export function handleIS(row: any, where: WhereObject, datasetName: string): boo
 		}
 	}
 	return true;
+}
+
+export function handleMCOMPARATOR(row: any, where: WhereObject, datasetName: string): boolean {
+	let mkey = "";
+	let value: any;
+	let type = "GT";
+	if ("GT" in where) {
+		[mkey, value] = Object.entries(where.GT!)[0];
+	} else if ("LT" in where) {
+		type = "LT";
+		[mkey, value] = Object.entries(where.LT!)[0];
+	} else if ("EQ" in where) {
+		type = "EQ";
+		[mkey, value] = Object.entries(where.EQ!)[0];
+	}
+	if (mkey.split("_")[0] !== datasetName) {
+		throw new InsightError("wrong dataset");
+	}
+	if (!mfield.includes(mkey.split("_")[1])) {
+		throw new InsightError("invalid key");
+	}
+	const key = mkey.split("_")[1];
+	return type === "GT" ? row[key] > value : type === "LT" ? row[key] < value : row[key] === value;
 }
 
 export interface IInsightFacade {
