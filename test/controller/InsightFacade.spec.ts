@@ -186,6 +186,7 @@ describe("InsightFacade", function () {
 					},
 				]);
 			} catch (_err) {
+				// console.log(_err);
 				expect.fail("Should not throw an error.");
 			}
 		});
