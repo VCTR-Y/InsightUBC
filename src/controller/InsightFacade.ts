@@ -29,7 +29,7 @@ export default class InsightFacade implements IInsightFacade {
 		const filePath = path.join(directory, `datasets.json`);
 		const fileExists = await fs.pathExists(filePath);
 
-		if (fileExists) {
+		if (fileExists && this.datasets.size === 0) {
 			await this.loadFromDisk(filePath);
 		}
 
@@ -71,7 +71,8 @@ export default class InsightFacade implements IInsightFacade {
 			return false;
 		}
 
-		if (!this.isBase64(content)) {
+		const isValidZip = await this.isValidBase64Zip(content);
+		if (!isValidZip) {
 			return false;
 		}
 
@@ -129,7 +130,6 @@ export default class InsightFacade implements IInsightFacade {
 		for (let i = 0; i < sections.length; i++) {
 			const section = sections[i];
 			if (!requiredFields.every((field) => section[field] !== undefined && section[field] !== null)) {
-				console.log(section);
 				sections.splice(i, 1);
 			}
 		}
@@ -188,9 +188,19 @@ export default class InsightFacade implements IInsightFacade {
 		}
 	}
 
-	private isBase64(str: string): boolean {
+	private async isValidBase64Zip(str: string): Promise<Boolean> {
 		const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
-		return base64Regex.test(str);
+		if (!base64Regex.test(str)) {
+			return false;
+		}
+
+		try {
+			const zip = new JSZip();
+			await zip.loadAsync(str, { base64: true });
+			return true;
+		} catch (_err) {
+			return false;
+		}
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -205,7 +215,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		const fileExists = await fs.pathExists(filePath);
 
-		if (fileExists) {
+		if (fileExists && this.datasets.size === 0) {
 			await this.loadFromDisk(datasetsPath);
 		}
 
@@ -268,7 +278,7 @@ export default class InsightFacade implements IInsightFacade {
 		const filePath = path.join(directory, "datasets.json");
 		const fileExists = await fs.pathExists(filePath);
 
-		if (fileExists) {
+		if (fileExists && this.datasets.size === 0) {
 			await this.loadFromDisk(filePath);
 		}
 

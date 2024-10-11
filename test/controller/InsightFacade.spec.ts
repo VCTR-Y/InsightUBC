@@ -144,8 +144,10 @@ describe("InsightFacade", function () {
 		it("should successfully add multiple valid datasets", async function () {
 			const result1 = await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 			const result2 = await facade.addDataset("sfu", sections, InsightDatasetKind.Sections);
+			const result3 = await facade.addDataset("datasets", sections, InsightDatasetKind.Sections);
 			expect(result1).to.have.members(["ubc"]);
 			expect(result2).to.have.members(["ubc", "sfu"]);
+			expect(result3).to.have.members(["ubc", "sfu", "datasets"]);
 		});
 
 		// it("should successfully add multiple valid datasets - persist", async function () {
@@ -183,8 +185,7 @@ describe("InsightFacade", function () {
 						numRows: 64612,
 					},
 				]);
-			} catch (err) {
-				console.log(err);
+			} catch (_err) {
 				expect.fail("Should not throw an error.");
 			}
 		});
