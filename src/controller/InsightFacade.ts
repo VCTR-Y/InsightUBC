@@ -280,6 +280,8 @@ export default class InsightFacade implements IInsightFacade {
 
 		if (fileExists && this.datasets.size === 0) {
 			await this.loadFromDisk(filePath);
+		} else {
+			return [];
 		}
 
 		let dataset: InsightDataset[];
