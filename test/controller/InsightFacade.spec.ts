@@ -186,6 +186,29 @@ describe("InsightFacade", function () {
 					},
 				]);
 			} catch (_err) {
+				// console.log(_err);
+				expect.fail("Should not throw an error.");
+			}
+		});
+
+		it("should list nothing", async function () {
+			try {
+				const datasets = await facade.listDatasets();
+
+				expect(datasets).to.deep.equal([]);
+			} catch (_err) {
+				expect.fail("Should not throw an error.");
+			}
+		});
+
+		it("should list nothing after remove", async function () {
+			try {
+				await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+				await facade.removeDataset("ubc");
+				const datasets = await facade.listDatasets();
+
+				expect(datasets).to.deep.equal([]);
+			} catch (_err) {
 				expect.fail("Should not throw an error.");
 			}
 		});

@@ -278,8 +278,12 @@ export default class InsightFacade implements IInsightFacade {
 		const filePath = path.join(directory, "datasets.json");
 		const fileExists = await fs.pathExists(filePath);
 
-		if (fileExists && this.datasets.size === 0) {
-			await this.loadFromDisk(filePath);
+		if (fileExists) {
+			if (this.datasets.size === 0) {
+				await this.loadFromDisk(filePath);
+			}
+		} else {
+			return [];
 		}
 
 		let dataset: InsightDataset[];
