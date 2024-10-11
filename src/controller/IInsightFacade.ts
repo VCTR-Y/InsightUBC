@@ -102,8 +102,8 @@ function isOptionsObject(object: any): object is OptionsObject {
 }
 
 export function isFilterObject(object: any): object is FILTER {
-	if (Object.keys(object).length === 1) {
-		return isSCOMPARATOR(object) || isMCOMPARATOR(object) || isLOGICCOMPARATOR(object);
+	if (isSCOMPARATOR(object) || isMCOMPARATOR(object) || isLOGICCOMPARATOR(object)) {
+		return Object.keys(object).length === 1;
 	}
 	return false;
 }
