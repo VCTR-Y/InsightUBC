@@ -7,7 +7,6 @@ import {
 	NotFoundError,
 	selectAndOrder,
 	ResultTooLargeError,
-	Section,
 	WhereObject,
 	isQuery,
 	handleIS,
@@ -259,13 +258,8 @@ export default class InsightFacade implements IInsightFacade {
 
 			const datasetName = options.COLUMNS[0].split("_")[0];
 
-			if (!this.datasets.has(datasetName)) {
-				throw new InsightError("dataset not found");
-			}
-
 			try {
-				const data = await fs.readFile(`data/${datasetName}.json`, "utf-8");
-				const dataset: Section[] = JSON.parse(data);
+				const dataset = await fs.readJSON(`data/${datasetName}.json`);
 
 				const filteredData = filterData(dataset, where, datasetName);
 				const maxResults = 5000;
