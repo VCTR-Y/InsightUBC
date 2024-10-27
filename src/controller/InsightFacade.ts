@@ -13,10 +13,16 @@ import {
 	handleMCOMPARATOR,
 	isFilterObject,
 } from "./IInsightFacade";
-import JSZip from "jszip";
 import fs from "fs-extra";
 import path from "node:path";
 import { clearDisk } from "../../test/TestUtil";
+import {
+	checkValidDataset,
+	getSectionsFromContent,
+	addDatasetToDisk,
+	addDatasetsMapToDisk,
+	loadFromDisk,
+} from "./DatasetUtils";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -32,16 +38,16 @@ export default class InsightFacade implements IInsightFacade {
 		const fileExists = await fs.pathExists(filePath);
 
 		if (fileExists && this.datasets.size === 0) {
-			await this.loadFromDisk(filePath);
+			await loadFromDisk(filePath, this.datasets);
 		}
 
-		const valid = await this.checkValidDataset(id, content, kind);
+		const valid = await checkValidDataset(id, content, kind, this.datasets);
 
 		if (!valid) {
 			throw new InsightError("Invalid id/content/kind");
 		}
 
-		const sections: any[] = await this.getSectionsFromContent(content);
+		const sections: any[] = await getSectionsFromContent(content);
 
 		if (sections.length === 0) {
 			throw new InsightError("no valid sections");
@@ -53,159 +59,11 @@ export default class InsightFacade implements IInsightFacade {
 			numRows: sections.length,
 		};
 
-		await this.addDatasetToDisk(id, sections);
+		await addDatasetToDisk(id, sections);
 
-		await this.addDatasetsMapToDisk(id, dataset);
+		await addDatasetsMapToDisk(id, dataset, this.datasets);
 
 		return Array.from(this.datasets.keys());
-	}
-
-	private async checkValidDataset(id: string, content: string, kind: InsightDatasetKind): Promise<Boolean> {
-		if (id === null || id.includes("_") || id.trim().length === 0) {
-			return false;
-		}
-
-		if (this.datasets.has(id)) {
-			return false;
-		}
-
-		if (content === null || content.trim().length === 0) {
-			return false;
-		}
-
-		const isValidZip = await this.isValidBase64Zip(content);
-		if (!isValidZip) {
-			return false;
-		}
-
-		if (kind === null) {
-			return false;
-		}
-
-		return kind === InsightDatasetKind.Sections;
-	}
-
-	private async getSectionsFromContent(content: string): Promise<any[]> {
-		const zip = new JSZip();
-		const data = await zip.loadAsync(content, { base64: true });
-		const courses = Object.keys(data.files);
-
-		if (!courses.includes("courses/")) {
-			throw new InsightError("courses Folder Not Found");
-		}
-
-		const coursesFolder = zip.folder("courses");
-		if (!coursesFolder || Object.keys(coursesFolder.files).length === 1) {
-			throw new InsightError("courses folder not found or no files found");
-		}
-
-		const sections: any[] = [];
-
-		await Promise.all(
-			Object.entries(coursesFolder.files).map(async ([_relativePath, file]) => {
-				try {
-					const fileData = await file.async("string");
-					if (!fileData) {
-						return;
-					}
-
-					const { result, rank } = JSON.parse(fileData);
-					if (!result || rank === undefined) {
-						throw new InsightError("result/rank key not found");
-					}
-
-					const datasetMapped = this.renameKeys(result);
-
-					sections.push(...datasetMapped);
-				} catch {
-					throw new InsightError("Invalid JSON");
-				}
-			})
-		);
-
-		return sections;
-	}
-
-	private renameKeys(sections: any[]): any[] {
-		const def = 1900;
-		const requiredFields = ["id", "Course", "Title", "Professor", "Subject", "Year", "Avg", "Pass", "Fail", "Audit"];
-		for (let i = 0; i < sections.length; i++) {
-			const section = sections[i];
-			if (!requiredFields.every((field) => section[field] !== undefined && section[field] !== null)) {
-				sections.splice(i, 1);
-			}
-		}
-
-		return sections.map((item: any) => ({
-			uuid: item.id,
-			id: item.Course,
-			title: item.Title,
-			instructor: item.Professor,
-			dept: item.Subject,
-			year: item.Section === "overall" ? def : Number(item.Year),
-			avg: item.Avg,
-			pass: item.Pass,
-			fail: item.Fail,
-			audit: item.Audit,
-		}));
-	}
-
-	private async addDatasetToDisk(id: string, sections: any[]): Promise<void> {
-		const directory = path.resolve(__dirname, "../../data");
-		fs.mkdir(directory, { recursive: true }, (err: any) => {
-			if (err) {
-				throw new InsightError("Something went wrong creating the directory");
-			}
-		});
-
-		const filePath = path.join(directory, `${id}.json`);
-
-		try {
-			await fs.outputJSON(filePath, sections, { spaces: 2 });
-		} catch (_err) {
-			throw new InsightError("Failed to write dataset to disk");
-		}
-		// await this.addDatasetsMapToDisk();
-	}
-
-	private async addDatasetsMapToDisk(id: string, dataset: InsightDataset): Promise<void> {
-		const directory = path.resolve(__dirname, "../../data/datasets");
-		fs.mkdir(directory, { recursive: true }, (err: any) => {
-			if (err) {
-				throw new InsightError("Something went wrong creating the directory");
-			}
-		});
-
-		this.datasets.set(id, dataset);
-
-		const filePath = path.join(directory, `datasets.json`);
-		const datasetsArray = Array.from(this.datasets.entries()).map(([_key, value]) => ({
-			id: value.id,
-			kind: value.kind,
-			numRows: value.numRows,
-		}));
-
-		try {
-			await fs.outputJSON(filePath, datasetsArray, { spaces: 2 });
-		} catch (_err) {
-			this.datasets.delete(id);
-			throw new InsightError("Failed to write dataset to disk");
-		}
-	}
-
-	private async isValidBase64Zip(str: string): Promise<Boolean> {
-		const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
-		if (!base64Regex.test(str)) {
-			return false;
-		}
-
-		try {
-			const zip = new JSZip();
-			await zip.loadAsync(str, { base64: true });
-			return true;
-		} catch (_err) {
-			return false;
-		}
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -221,7 +79,7 @@ export default class InsightFacade implements IInsightFacade {
 		const fileExists = await fs.pathExists(filePath);
 
 		if (fileExists && this.datasets.size === 0) {
-			await this.loadFromDisk(datasetsPath);
+			await loadFromDisk(datasetsPath, this.datasets);
 		}
 
 		if (!this.datasets.has(id)) {
@@ -289,7 +147,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		if (fileExists) {
 			if (this.datasets.size === 0) {
-				await this.loadFromDisk(filePath);
+				await loadFromDisk(filePath, this.datasets);
 			}
 		} else {
 			return [];
@@ -303,17 +161,6 @@ export default class InsightFacade implements IInsightFacade {
 		} catch (_err) {
 			throw new InsightError("Something went wrong listing datasets");
 		}
-	}
-
-	private async loadFromDisk(filePath: string): Promise<void> {
-		const datasetsArray = await fs.readJSON(filePath);
-		datasetsArray.forEach((dataset: InsightDataset) => {
-			this.datasets.set(dataset.id, {
-				id: dataset.id,
-				kind: dataset.kind,
-				numRows: dataset.numRows,
-			});
-		});
 	}
 }
 
