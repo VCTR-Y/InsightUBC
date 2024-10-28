@@ -1,7 +1,8 @@
-import { InsightDataset, InsightDatasetKind, InsightError } from "./IInsightFacade";
-import JSZip from "jszip";
+import {InsightDataset, InsightDatasetKind, InsightError} from "./IInsightFacade";
+import JSZip, {folder} from "jszip";
 import fs from "fs-extra";
 import path from "node:path";
+import doc = Mocha.reporters.doc;
 
 export async function checkValidDataset(
 	id: string,
@@ -26,11 +27,7 @@ export async function checkValidDataset(
 		return false;
 	}
 
-	if (kind === null) {
-		return false;
-	}
-
-	return kind === InsightDatasetKind.Sections;
+	return kind === InsightDatasetKind.Sections || kind === InsightDatasetKind.Rooms;
 }
 
 export async function isValidBase64Zip(str: string): Promise<boolean> {
@@ -80,7 +77,7 @@ export async function getSectionsFromContent(content: string): Promise<any[]> {
 				const datasetMapped = renameKeys(result);
 
 				sections.push(...datasetMapped);
-			} catch {
+			} catch (_err) {
 				throw new InsightError("Invalid JSON");
 			}
 		})
@@ -88,6 +85,37 @@ export async function getSectionsFromContent(content: string): Promise<any[]> {
 
 	return sections;
 }
+
+export async function getRoomsFromContent(content: string): Promise<any[]> {
+	const zip = new JSZip();
+	const data = await zip.loadAsync(content, { base64: true });
+	const parse5 = require('parse5');
+	const indexFile = data.file("index.htm");
+	const buildingsPath = "campus/discover/buildings-and-classrooms/";
+	const rooms = Object.keys(data.files);
+
+	if (!indexFile) {
+		throw new InsightError("Index.htm file not found");
+	}
+	if (!rooms.includes(buildingsPath)) {
+		throw new InsightError("buildings-and-classrooms folder not found");
+	}
+
+	const indexContent = await indexFile.async("text");
+	const document = parse5.parse(indexContent);
+	const buildingTable = findBuildingTable(document);
+	// TO DO
+
+
+
+	{return [];}
+}
+
+export function findBuildingTable(html: string): any {
+	// TODO
+	return;
+}
+
 
 export function renameKeys(sections: any[]): any[] {
 	const def = 1900;
