@@ -5,14 +5,9 @@ import {
 	InsightError,
 	InsightResult,
 	NotFoundError,
-	selectAndOrder,
 	ResultTooLargeError,
-	WhereObject,
-	isQuery,
-	handleIS,
-	handleMCOMPARATOR,
-	isFilterObject,
 } from "./IInsightFacade";
+import { selectAndOrder, WhereObject, isQuery, handleIS, handleMCOMPARATOR, isFilterObject } from "./QueryUtils";
 import fs from "fs-extra";
 import path from "node:path";
 import { clearDisk } from "../../test/TestUtil";
