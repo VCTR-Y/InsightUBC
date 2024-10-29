@@ -1,5 +1,11 @@
 import { InsightError } from "./IInsightFacade";
 
+export const mfield = ["avg", "pass", "fail", "audit", "year"];
+export const sfield = ["dept", "id", "instructor", "title", "uuid"];
+
+let keys: any[] = [];
+keys = keys.concat(mfield, sfield);
+
 export interface MCOMPARATOR {
 	GT?: Record<string, number>;
 	LT?: Record<string, number>;
@@ -22,18 +28,43 @@ export type WhereObject = FILTER;
 
 export interface OptionsObject {
 	COLUMNS: string[];
-	ORDER?: string;
+	ORDER?: string | OrderObject;
 }
 
 export interface QueryObject {
 	WHERE: WhereObject;
 	OPTIONS: OptionsObject;
+	TRANSFORMATIONS: TransformationsObject;
+}
+
+export interface TransformationsObject {
+	GROUP: string[];
+	APPLY: string[];
+}
+
+export interface OrderObject {
+	dir: string;
+	keys: string[];
 }
 
 export function isQuery(object: any): object is QueryObject {
-	return (
-		typeof object === "object" && object !== null && isWhereObject(object.WHERE) && isOptionsObject(object.OPTIONS)
+	if (
+		typeof object !== "object" ||
+		object === null ||
+		!isWhereObject(object.WHERE) ||
+		!isOptionsObject(object.OPTIONS)
+	) {
+		return false;
+	}
+
+	const hasTransformations = "TRANSFORMATIONS" in object;
+
+	const validTransformations = !hasTransformations || isTransformationsObject(object.TRANSFORMATIONS);
+	const validKeys = Object.keys(object).every(
+		(key) => key === "WHERE" || key === "OPTIONS" || key === "TRANSFORMATIONS"
 	);
+
+	return validTransformations && validKeys;
 }
 
 function isWhereObject(object: any): object is WhereObject {
@@ -45,9 +76,22 @@ function isOptionsObject(object: any): object is OptionsObject {
 		typeof object === "object" &&
 		object !== null &&
 		Array.isArray(object.COLUMNS) &&
-		(typeof object.ORDER === "string" || object.ORDER === undefined) &&
+		(typeof object.ORDER === "string" || object.ORDER === undefined || isOrderObject(object.ORDER)) &&
 		Object.keys(object).every((key) => key === "COLUMNS" || key === "ORDER")
 	);
+}
+
+function isOrderObject(object: any): object is OrderObject {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		typeof object.dir === "string" &&
+		(object.dir === "UP" || object.dir === "DOWN")
+	);
+}
+
+function isTransformationsObject(object: any): object is TransformationsObject {
+	return typeof object === "object" && object !== null && object;
 }
 
 export function isFilterObject(object: any): object is FILTER {
@@ -77,12 +121,6 @@ function isLOGICCOMPARATOR(object: any): object is SCOMPARATOR {
 	);
 }
 
-export const mfield = ["avg", "pass", "fail", "audit", "year"];
-export const sfield = ["dept", "id", "instructor", "title", "uuid"];
-
-let keys: any[] = [];
-keys = keys.concat(mfield, sfield);
-
 export function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
 	const selectedData = filteredData.map((row) => {
 		const selectedRow: any = {};
@@ -98,17 +136,41 @@ export function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
 		return selectedRow;
 	});
 
+	return sort(selectedData, query);
+}
+
+export function sort(selectedData: any[], query: QueryObject): any[] {
 	if (query.OPTIONS.ORDER) {
-		if (!keys.includes(query.OPTIONS.ORDER.split("_")[1])) {
-			throw new InsightError("Invalid key");
+		const order = query.OPTIONS.ORDER;
+
+		if (typeof order === "string") {
+			if (!query.OPTIONS.COLUMNS.includes(order)) {
+				throw new InsightError("ORDER not in COLUMNS");
+			}
+			selectedData.sort((a, b) => {
+				return a[order] > b[order] ? 1 : -1;
+			});
+		} else if (typeof order === "object" && order !== null) {
+			const { dir, keys: orderKeys } = order;
+
+			if (!orderKeys.every((key) => query.OPTIONS.COLUMNS.includes(key))) {
+				throw new InsightError("ORDER keys must be in COLUMNS");
+			}
+
+			selectedData.sort((a, b) => {
+				for (const key of orderKeys) {
+					if (a[key] > b[key]) {
+						return dir === "UP" ? 1 : -1;
+					}
+					if (a[key] < b[key]) {
+						return dir === "UP" ? -1 : 1;
+					}
+				}
+				return 0;
+			});
+		} else {
+			throw new InsightError("Invalid ORDER format");
 		}
-		if (!query.OPTIONS.COLUMNS.includes(query.OPTIONS.ORDER)) {
-			throw new InsightError("ORDER not in COLUMNS");
-		}
-		selectedData.sort((a, b) => {
-			const orderKey = query.OPTIONS.ORDER!;
-			return a[orderKey] > b[orderKey] ? 1 : -1;
-		});
 	}
 	return selectedData;
 }
