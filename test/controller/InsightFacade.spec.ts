@@ -205,6 +205,27 @@ describe("InsightFacade", function () {
 				await facade.addDataset("room", emptyBuildingFolder, InsightDatasetKind.Rooms);
 				expect.fail("Should throw here");
 			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject with no table in index.htm", async function() {
+			try {
+				const noTable = await getContentFromArchives("campusNoTable.zip");
+				await facade.addDataset("room", noTable, InsightDatasetKind.Rooms);
+				expect.fail("Should throw here");
+			} catch (err) {
+				console.log(err);
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject with no correct td class in index.htm", async function() {
+			try {
+				const noCorrectClass = await getContentFromArchives("campusNoCorrectClass.zip");
+				await facade.addDataset("room", noCorrectClass, InsightDatasetKind.Rooms);
+				expect.fail("Should throw here");
+			} catch (err) {
 				console.log(err);
 				expect(err).to.be.instanceOf(InsightError);
 			}

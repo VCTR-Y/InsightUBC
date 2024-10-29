@@ -104,16 +104,105 @@ export async function getRoomsFromContent(content: string): Promise<any[]> {
 	const indexContent = await indexFile.async("text");
 	const document = parse5.parse(indexContent);
 	const buildingTable = findBuildingTable(document);
-	// TO DO
 
+	if (!buildingTable) {
+		throw new InsightError("No Valid Table");
+	}
+
+	const buildings = parseBuildings(buildingTable, data)
+	console.log(buildings);
 
 
 	{return [];}
 }
 
-export function findBuildingTable(html: string): any {
-	// TODO
-	return;
+function findBuildingTable(document: string): any {
+	const tables = findNodesByTag(document, "table");
+	for (const table of tables) {
+		if (containsValidBuildingData(table)) {
+			return table;
+		}
+	}
+	return null;
+}
+
+function findNodesByTag(node: any, tagName: string): any[] {
+	const nodes: any[] = [];
+
+	if (node.tagName === tagName) {
+		nodes.push(node);
+	}
+
+	if (node.childNodes && Array.isArray(node.childNodes)) {
+		for (const child of node.childNodes) {
+			nodes.push(...findNodesByTag(child, tagName));
+		}
+	}
+
+	return nodes;
+}
+
+// IDK IF THIS IMPLEMENTATION IS RIGHT/CORRECT (Checks if there is AT LEAST ONE VALID ROOM)
+function containsValidBuildingData(table: any): boolean {
+	const cells = findNodesByTag(table, "td");
+
+	let hasTitle = false;
+	let hasAddress = false;
+
+	for (const cell of cells) {
+		const classAttr = cell.attrs?.find((attr: any) => attr.name === "class");
+		if (classAttr) {
+			const cellClasses = classAttr.value.split(" ");
+			// console.log(cellClasses);
+			if (cellClasses.includes("views-field") && cellClasses.includes("views-field-title")) {
+				hasTitle = true;
+			}
+			// console.log(hasTitle);
+			if (cellClasses.includes("views-field") && cellClasses.includes("views-field-field-building-address")) {
+				hasAddress = true;
+			}
+			// console.log(hasAddress);
+		}
+	}
+
+	return hasTitle && hasAddress;
+}
+
+function parseBuildings(buildingTable: any, data: any): any[] {
+	const buildings: any[] = [];
+	const parse5 = require('parse5');
+	const rows = findNodesByTag(buildingTable, "tr");
+
+	for (const row of rows) {
+		const titleCell = findNodesByTag(row, "td").find(cell => {
+			const classAttr = cell.attrs?.find((attr: any) => attr.name === "class");
+			const cellClasses = classAttr.value.split(" ");
+			return cellClasses && cellClasses.includes("views-field") && cellClasses.includes("views-field-title");
+		});
+
+		const addressCell = findNodesByTag(row, "td").find(cell => {
+			const classAttr = cell.attrs?.find((attr: any) => attr.name === "class");
+			const cellClasses = classAttr.value.split(" ");
+			return cellClasses && cellClasses.includes("views-field") && cellClasses.includes("views-field-field-building-address");
+		});
+
+		if (titleCell && addressCell) {
+			const link = findNodesByTag(titleCell, "a")[0];
+			const hrefAttr = link.attrs?.find((attr: any) => attr.name === "href");
+			if (hrefAttr) {
+				const buildingFilePath = hrefAttr.value.replace("./", "");
+				if (data.file(buildingFilePath)) {
+					// If building file exists, add building to the list
+					buildings.push({
+						address: parse5.serialize(addressCell),
+						filePath: buildingFilePath,
+					});
+				}
+			}
+		}
+	}
+
+	return buildings;
 }
 
 
