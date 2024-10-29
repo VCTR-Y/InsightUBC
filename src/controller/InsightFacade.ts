@@ -10,7 +10,7 @@ import {
 import { selectAndOrder, WhereObject, isQuery, handleIS, handleMCOMPARATOR, isFilterObject } from "./QueryUtils";
 import fs from "fs-extra";
 import path from "node:path";
-import { clearDisk } from "../../test/TestUtil";
+
 import {
 	checkValidDataset,
 	getSectionsFromContent,
@@ -96,10 +96,6 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("Couldn't update datasets.json");
 		}
 		this.datasets.delete(id);
-
-		if (this.datasets.size === 0) {
-			await clearDisk();
-		}
 
 		return id;
 	}
