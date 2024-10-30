@@ -17,7 +17,8 @@ import {
 	addDatasetToDisk,
 	addDatasetsMapToDisk,
 	loadFromDisk,
-} from "./DatasetUtils";
+} from "./SectionDatasetUtils";
+import {getRoomsFromContent} from "./RoomDatasetUtils";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -42,19 +43,27 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("Invalid id/content/kind");
 		}
 
-		const sections: any[] = await getSectionsFromContent(content);
+		let data: any[];
 
-		if (sections.length === 0) {
-			throw new InsightError("no valid sections");
+		if (kind === InsightDatasetKind.Sections) {
+			data = await getSectionsFromContent(content);
+		} else if (kind === InsightDatasetKind.Rooms) {
+			data = await getRoomsFromContent(content);
+		} else {
+			throw new InsightError("Invalid Kind");
+		}
+
+		if (data.length === 0) {
+			throw new InsightError("no valid rooms/sections");
 		}
 
 		const dataset: InsightDataset = {
-			id,
-			kind,
-			numRows: sections.length,
+			id: id,
+			kind: kind,
+			numRows: data.length,
 		};
 
-		await addDatasetToDisk(id, sections);
+		await addDatasetToDisk(id, data);
 
 		await addDatasetsMapToDisk(id, dataset, this.datasets);
 
