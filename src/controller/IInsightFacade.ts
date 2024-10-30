@@ -15,6 +15,12 @@ export interface InsightDataset {
 	numRows: number;
 }
 
+export interface GeoResponse {
+	lat?: number;
+	lon?: number;
+	error?: string;
+}
+
 export interface Section {
 	title: string;
 	uuid: string;

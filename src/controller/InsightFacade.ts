@@ -20,10 +20,10 @@ import {
 	addDatasetsMapToDisk,
 	addDatasetToDisk,
 	checkValidDataset,
-	getRoomsFromContent,
 	getSectionsFromContent,
 	loadFromDisk,
-} from "./DatasetUtils";
+} from "./SectionDatasetUtils";
+import { getRoomsFromContent } from "./RoomDatasetUtils";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -55,11 +55,11 @@ export default class InsightFacade implements IInsightFacade {
 		} else if (kind === InsightDatasetKind.Rooms) {
 			data = await getRoomsFromContent(content);
 		} else {
-			throw new InsightError("Invalid Kind")
+			throw new InsightError("Invalid Kind");
 		}
 
 		if (data.length === 0) {
-			throw new InsightError("no valid sections");
+			throw new InsightError("no valid rooms/sections");
 		}
 
 		const dataset: InsightDataset = {
