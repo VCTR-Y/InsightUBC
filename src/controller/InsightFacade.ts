@@ -1,29 +1,23 @@
 import {
-	handleIS,
-	handleMCOMPARATOR,
 	IInsightFacade,
 	InsightDataset,
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	isFilterObject,
-	isQuery,
 	NotFoundError,
 	ResultTooLargeError,
-	selectAndOrder,
-	WhereObject,
 } from "./IInsightFacade";
+import { selectAndOrder, WhereObject, isQuery, handleIS, handleMCOMPARATOR, isFilterObject } from "./QueryUtils";
 import fs from "fs-extra";
 import path from "node:path";
-// import {clearDisk} from "../../test/TestUtil";
+
 import {
-	addDatasetsMapToDisk,
-	addDatasetToDisk,
 	checkValidDataset,
 	getSectionsFromContent,
+	addDatasetToDisk,
+	addDatasetsMapToDisk,
 	loadFromDisk,
-} from "./SectionDatasetUtils";
-import { getRoomsFromContent } from "./RoomDatasetUtils";
+} from "./DatasetUtils";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -48,27 +42,19 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("Invalid id/content/kind");
 		}
 
-		let data: any[];
+		const sections: any[] = await getSectionsFromContent(content);
 
-		if (kind === InsightDatasetKind.Sections) {
-			data = await getSectionsFromContent(content);
-		} else if (kind === InsightDatasetKind.Rooms) {
-			data = await getRoomsFromContent(content);
-		} else {
-			throw new InsightError("Invalid Kind");
-		}
-
-		if (data.length === 0) {
-			throw new InsightError("no valid rooms/sections");
+		if (sections.length === 0) {
+			throw new InsightError("no valid sections");
 		}
 
 		const dataset: InsightDataset = {
-			id: id,
-			kind: kind,
-			numRows: data.length,
+			id,
+			kind,
+			numRows: sections.length,
 		};
 
-		await addDatasetToDisk(id, data);
+		await addDatasetToDisk(id, sections);
 
 		await addDatasetsMapToDisk(id, dataset, this.datasets);
 
@@ -105,15 +91,11 @@ export default class InsightFacade implements IInsightFacade {
 			const updatedDatasetsList = datasetsList.filter((dataset) => {
 				return dataset.id !== id;
 			});
-			await fs.outputJSON(datasetsPath, updatedDatasetsList, { spaces: 2 });
+			await fs.writeJSON(datasetsPath, updatedDatasetsList, { spaces: 2 });
 		} catch (_err) {
 			throw new InsightError("Couldn't update datasets.json");
 		}
 		this.datasets.delete(id);
-
-		// if (this.datasets.size === 0) {
-		// 	await clearDisk();
-		// }
 
 		return id;
 	}

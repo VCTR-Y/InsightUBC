@@ -457,14 +457,16 @@ describe("InsightFacade", function () {
 		});
 
 		// it("should remove dataset - persist 1", async function () {
+		// 	this.timeout(10000);
 		// 	try {
 		// 		await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 		//
 		// 		const facade2 = new InsightFacade();
 		// 		await facade2.removeDataset("ubc");
 		//
-		// 		const datasets = await new InsightFacade().listDatasets();
-		// 		expect(datasets.length).to.eq(0);
+		// 		const result = await new InsightFacade().addDataset("ubc", sections, InsightDatasetKind.Sections);
+		//
+		// 		expect(result).to.have.members(["ubc"]);
 		// 	} catch (err) {
 		// 		console.log(err);
 		// 		expect.fail("Should not throw an error.");
@@ -495,6 +497,8 @@ describe("InsightFacade", function () {
 					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
 				}
 				// expect(result).to.deep.equal(expected);
+				// console.log(result);
+				// console.log(expected);
 				expect(result).to.have.deep.members(expected);
 			} catch (err) {
 				// console.log(err);
@@ -539,6 +543,9 @@ describe("InsightFacade", function () {
 			"[valid/simple5.json] SELECT instructor, avg, fail WHERE instructor IS *wolfman* AND avg > 90 OR fail < 10",
 			checkQuery
 		);
+		it("[valid/sort.json] SORT 1", checkQuery);
+		it("[valid/sort2.json] SORT 2", checkQuery);
+		it("[valid/sort3.json] SORT 3", checkQuery);
 		it(
 			"[valid/complex.json] SELECT dept, id, avg WHERE (avg > 90 AND dept = 'adhe') OR avg = 95 ORDER BY avg",
 			checkQuery
@@ -566,5 +573,31 @@ describe("InsightFacade", function () {
 		it("[invalid/multiple.json] Query with multiple datasets", checkQuery);
 		it("[invalid/wildcard.json] Query with wildcard mutant", checkQuery);
 		it("[invalid/asterisk.json] Query with only asterisks", checkQuery);
+
+		it("run in new instance", async function () {
+			const testTitle = "[valid/simple.json] SELECT dept, avg WHERE avg > 97";
+			const { input, expected, errorExpected } = await loadTestQuery(testTitle);
+			let result: InsightResult[];
+
+			try {
+				// await facade.removeDataset("ubc");
+				result = await new InsightFacade().performQuery(input);
+				if (errorExpected) {
+					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
+				}
+				// expect(result).to.deep.equal(expected);
+				expect(result).to.have.deep.members(expected);
+			} catch (err) {
+				// console.log(err);
+				if (!errorExpected) {
+					expect.fail(`performQuery threw unexpected error: ${err}`);
+				}
+				if (err instanceof ResultTooLargeError) {
+					expect(err).to.be.instanceOf(ResultTooLargeError);
+				} else {
+					expect(err).to.be.instanceOf(InsightError);
+				}
+			}
+		});
 	});
 });
