@@ -25,16 +25,18 @@ describe("InsightFacade", function () {
 	let facade: IInsightFacade;
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
+	let rooms: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
 		sections = await getContentFromArchives("pair.zip");
+		rooms = await getContentFromArchives("campus.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
 	});
 
-	describe("AddDataset", function () {
+	describe("AddSectionDataset", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -147,6 +149,11 @@ describe("InsightFacade", function () {
 			expect(result2).to.have.members(["ubc", "sfu"]);
 		});
 
+		// it("should successfully add a room dataset", async function() {
+		// 	const result = await facade.addDataset("room", rooms, InsightDatasetKind.Rooms);
+		// 	expect(result).to.have.members(["room"]);
+		// });
+
 		// it("should successfully add multiple valid datasets - persist", async function () {
 		// 	const result1 = await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 		// 	expect(result1).to.have.members(["ubc"]);
@@ -155,6 +162,111 @@ describe("InsightFacade", function () {
 		// 	const result2 = await testFacade.addDataset("uvic", sections, InsightDatasetKind.Sections);
 		// 	expect(result2).to.have.members(["ubc", "sfu", "uvic"]);
 		// });
+	});
+
+	describe("AddRoomsDataset", function () {
+		beforeEach(function () {
+			// This section resets the insightFacade instance
+			// This runs before each test
+			facade = new InsightFacade();
+		});
+
+		afterEach(async function () {
+			// This section resets the data directory (removing any cached data)
+			// This runs after each test, which should make each test independent of the previous one
+			await clearDisk();
+		});
+
+		it("should reject with index.htm not found", async function () {
+			try {
+				const noIndex = await getContentFromArchives("campusNoIndex.zip");
+				await facade.addDataset("room", noIndex, InsightDatasetKind.Rooms);
+				expect.fail("Should throw here");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject with buildings-and-classrooms folder not found", async function () {
+			try {
+				const noBuildingFolder = await getContentFromArchives("campusNoBuildingFolder.zip");
+				await facade.addDataset("room", noBuildingFolder, InsightDatasetKind.Rooms);
+				expect.fail("Should throw here");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject with empty buildings-and-classrooms folder", async function () {
+			try {
+				const emptyBuildingFolder = await getContentFromArchives("campusEmptyBuildingFolder.zip");
+				await facade.addDataset("room", emptyBuildingFolder, InsightDatasetKind.Rooms);
+				expect.fail("Should throw here");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject with no table in index.htm", async function () {
+			try {
+				const noTable = await getContentFromArchives("campusNoTable.zip");
+				await facade.addDataset("room", noTable, InsightDatasetKind.Rooms);
+				expect.fail("Should throw here");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject with no correct td class in index.htm", async function () {
+			try {
+				const noCorrectClass = await getContentFromArchives("campusNoCorrectClass.zip");
+				await facade.addDataset("room", noCorrectClass, InsightDatasetKind.Rooms);
+				expect.fail("Should throw here");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject a rooms dataset with only a building file not in index", async function () {
+			try {
+				const notInIndex = await getContentFromArchives("campusBFileNotInIndex.zip");
+				await facade.addDataset("room", notInIndex, InsightDatasetKind.Rooms);
+				expect.fail("Should throw here");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject a rooms dataset with only a building file with no table", async function () {
+			try {
+				const noTable = await getContentFromArchives("campusBuildingNoTable.zip");
+				await facade.addDataset("room", noTable, InsightDatasetKind.Rooms);
+				expect.fail("Should throw here");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject a rooms dataset with only building file with invalid data", async function () {
+			try {
+				const invalidData = await getContentFromArchives("campusInvalidRoomData.zip");
+				await facade.addDataset("room", invalidData, InsightDatasetKind.Rooms);
+				expect.fail("Should throw here");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should successfully add a rooms dataset with only one building file", async function () {
+			const oneBFile = await getContentFromArchives("campusOneBuildingFile.zip");
+			const result = await facade.addDataset("ubc", oneBFile, InsightDatasetKind.Rooms);
+			expect(result).to.have.members(["ubc"]);
+		});
+
+		it("should successfully add a rooms dataset", async function () {
+			const result = await facade.addDataset("ubc", rooms, InsightDatasetKind.Rooms);
+			expect(result).to.have.members(["ubc"]);
+		});
 	});
 
 	describe("ListDatasets", function () {
