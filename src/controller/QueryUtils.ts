@@ -1,5 +1,4 @@
 import { InsightError } from "./IInsightFacade";
-import Decimal from "decimal.js";
 
 export const mfield = ["avg", "pass", "fail", "audit", "year", "lat", "lon", "seats"];
 export const sfield = [
@@ -92,6 +91,9 @@ export function isQuery(object: any): object is QueryObject {
 }
 
 function isWhereObject(object: any): object is WhereObject {
+	if (object === null || typeof object !== "object") {
+		return false;
+	}
 	return isFilterObject(object) || Object.keys(object).length === 0;
 }
 
@@ -130,18 +132,22 @@ function isSCOMPARATOR(object: any): object is SCOMPARATOR {
 }
 
 function isMCOMPARATOR(object: any): object is SCOMPARATOR {
+	const validKeys = Object.keys(object).every((key) => key === "GT" || key === "LT" || key === "EQ");
 	return (
 		typeof object === "object" &&
 		object !== null &&
-		(object.GT !== undefined || object.LT !== undefined || object.EQ !== undefined)
+		(object.GT !== undefined || object.LT !== undefined || object.EQ !== undefined) &&
+		validKeys
 	);
 }
 
 function isLOGICCOMPARATOR(object: any): object is SCOMPARATOR {
+	const validKeys = Object.keys(object).every((key) => key === "AND" || key === "OR" || key === "NOT");
 	return (
 		typeof object === "object" &&
 		object !== null &&
-		(object.AND !== undefined || object.OR !== undefined || object.NOT !== undefined)
+		(object.AND !== undefined || object.OR !== undefined || object.NOT !== undefined) &&
+		validKeys
 	);
 }
 
@@ -152,9 +158,12 @@ export function filterData(dataset: any[], where: WhereObject, datasetName: stri
 }
 
 export function parseWhereObject(row: any, where: WhereObject, datasetName: string): boolean {
-	// if (!isFilterObject(where)) {
-	// 	throw new InsightError("Invalid object");
-	// }
+	if (Object.keys(where).length === 0) {
+		return true;
+	}
+	if (!isFilterObject(where)) {
+		throw new InsightError("Invalid object");
+	}
 	if ("IS" in where) {
 		return handleIS(row, where, datasetName);
 	} else if ("GT" in where) {
@@ -176,8 +185,8 @@ export function parseWhereObject(row: any, where: WhereObject, datasetName: stri
 	} else if ("NOT" in where) {
 		return !parseWhereObject(row, where.NOT!, datasetName);
 	}
-	// throw new InsightError("Invalid object");
-	return true;
+	throw new InsightError("Invalid object");
+	// return true;
 }
 
 export function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
@@ -185,13 +194,17 @@ export function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
 		const selectedRow: any = {};
 
 		query.OPTIONS.COLUMNS.forEach((column) => {
-			// console.log(row);
-			// console.log(column);
-			// const oldColumn = column.split("_")[1];
+			const oldColumn = column.split("_")[1];
 			// if (!keys.includes(oldColumn)) {
 			// 	throw new InsightError("Invalid key");
 			// }
-			selectedRow[column] = row[column];
+			if (row[column] !== undefined) {
+				selectedRow[column] = row[column];
+			} else if (row[oldColumn] !== undefined) {
+				selectedRow[column] = row[oldColumn];
+			} else {
+				throw new InsightError("Invalid key");
+			}
 		});
 
 		return selectedRow;
@@ -234,73 +247,6 @@ export function sort(selectedData: any[], query: QueryObject): any[] {
 		}
 	}
 	return selectedData;
-}
-
-type Row = Record<string, any>;
-
-export function groupAndApply(data: Row[], query: QueryObject): Row[] {
-	const groupKeys = query.TRANSFORMATIONS.GROUP;
-	const applyRules = query.TRANSFORMATIONS.APPLY;
-
-	const groupedData = groupData(data, groupKeys);
-
-	return Array.from(groupedData.values()).map((group) => {
-		const result: Row = {};
-
-		groupKeys.forEach((key) => (result[key] = group[0][key.split("_")[1]]));
-
-		applyRules.forEach((rule) => {
-			const [applyKey, applyObj] = Object.entries(rule)[0];
-			const [token, field] = Object.entries(applyObj)[0];
-			result[applyKey] = applyRule(token, group, field);
-		});
-		return result;
-	});
-}
-
-export function groupData(data: Row[], groupKeys: string[]): Map<string, Row[]> {
-	const map = new Map<string, Row[]>();
-	// console.log(groupKeys);
-
-	data.forEach((row) => {
-		const key = groupKeys.map((k) => row[k.split("_")[1]]).join("_");
-		if (!map.has(key)) {
-			map.set(key, []);
-		}
-		if (!map.get(key)!.includes(row)) {
-			map.get(key)!.push(row);
-		}
-	});
-	return map;
-}
-
-export function applyRule(token: string, group: Row[], field: string): any {
-	const values = group.map((row) => row[field.split("_")[1]]).filter((v) => v !== undefined);
-
-	switch (token) {
-		case "MAX":
-			return Math.max(...values);
-		case "MIN":
-			return Math.min(...values);
-		case "AVG":
-			return calcAverage(values);
-		case "COUNT":
-			return new Set(values).size;
-		case "SUM":
-			return values.reduce((sum, val) => sum + val, 0);
-		default:
-			throw new InsightError("Invalid APPLY token");
-	}
-}
-
-function calcAverage(values: number[]): number {
-	const magicNumber = 2;
-
-	const decValues = values.map((v) => new Decimal(v));
-	const total = decValues.reduce((t, v) => Decimal.add(t, v), new Decimal(0));
-	const numRows = values.length;
-	const avg = total.toNumber() / numRows;
-	return Number(avg.toFixed(magicNumber));
 }
 
 export function handleIS(row: any, where: WhereObject, datasetName: string): boolean {
