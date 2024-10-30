@@ -22,7 +22,6 @@ export interface ITestQuery {
 }
 
 describe("InsightFacade", function () {
-	this.timeout(10000);
 	let facade: IInsightFacade;
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
@@ -267,6 +266,12 @@ describe("InsightFacade", function () {
 		it("should successfully add a rooms dataset", async function () {
 			const result = await facade.addDataset("ubc", rooms, InsightDatasetKind.Rooms);
 			expect(result).to.have.members(["ubc"]);
+		});
+
+		it("should successfully add a sections and rooms dataset", async function () {
+			await facade.addDataset("ubcc", rooms, InsightDatasetKind.Rooms);
+			const result = await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+			expect(result).to.have.members(["ubcc", "ubc"]);
 		});
 	});
 

@@ -121,19 +121,15 @@ function containsValidRoomData(table: any): boolean {
 			if (cellClasses.includes("views-field") && cellClasses.includes("views-field-field-room-number")) {
 				hasRoom = true;
 			}
-			// console.log("room" + ": " + hasRoom)
 			if (cellClasses.includes("views-field") && cellClasses.includes("views-field-field-room-capacity")) {
 				hasCapacity = true;
 			}
-			// console.log("capa" + ": " + hasCapacity)
 			if (cellClasses.includes("views-field") && cellClasses.includes("views-field-field-room-furniture")) {
 				hasFurniture = true;
 			}
-			// console.log("furn" + ": " + hasFurniture)
 			if (cellClasses.includes("views-field") && cellClasses.includes("views-field-field-room-type")) {
 				hasType = true;
 			}
-			// console.log("type" + ": " + hasType);
 		}
 	}
 	return hasRoom && hasCapacity && hasFurniture && hasType;
@@ -253,7 +249,6 @@ async function fetchGeolocation(address: string): Promise<GeoResponse> {
 	return new Promise((resolve) => {
 		const encodedAddress = encodeURIComponent(address);
 		const url = `http://cs310.students.cs.ubc.ca:11316/api/v1/project_team181/${encodedAddress}`;
-
 		http
 			.get(url, (response) => {
 				let data = "";
