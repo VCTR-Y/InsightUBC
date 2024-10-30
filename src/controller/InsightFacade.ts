@@ -7,7 +7,7 @@ import {
 	NotFoundError,
 	ResultTooLargeError,
 } from "./IInsightFacade";
-import { selectAndOrder, WhereObject, isQuery, handleIS, handleMCOMPARATOR, isFilterObject } from "./QueryUtils";
+import { selectAndOrder, isQuery, filterData, groupAndApply } from "./QueryUtils";
 import fs from "fs-extra";
 import path from "node:path";
 
@@ -123,13 +123,21 @@ export default class InsightFacade implements IInsightFacade {
 				const dataset = await fs.readJSON(`data/${datasetName}.json`);
 
 				const filteredData = filterData(dataset, where, datasetName);
+
+				let transformedData = filteredData;
+
+				if (query.TRANSFORMATIONS) {
+					transformedData = groupAndApply(transformedData, query);
+				}
+
+				const selectedData = selectAndOrder(transformedData, query);
 				const maxResults = 5000;
-				if (filteredData.length > maxResults) {
+				if (selectedData.length > maxResults) {
 					throw new ResultTooLargeError();
 				}
-				return selectAndOrder(filteredData, query);
+				return selectedData;
 			} catch (err) {
-				// console.log(err);
+				//console.log(err);
 				if (err instanceof ResultTooLargeError) {
 					throw new ResultTooLargeError("Too many results");
 				}
@@ -162,38 +170,4 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("Something went wrong listing datasets");
 		}
 	}
-}
-
-function filterData(dataset: any[], where: WhereObject, datasetName: string): any[] {
-	return dataset.filter((row) => {
-		return parseWhereObject(row, where, datasetName);
-	});
-}
-
-function parseWhereObject(row: any, where: WhereObject, datasetName: string): boolean {
-	if (!isFilterObject(where)) {
-		throw new InsightError("Invalid object");
-	}
-	if ("IS" in where) {
-		return handleIS(row, where, datasetName);
-	} else if ("GT" in where) {
-		return handleMCOMPARATOR(row, where, datasetName);
-	} else if ("LT" in where) {
-		return handleMCOMPARATOR(row, where, datasetName);
-	} else if ("EQ" in where) {
-		return handleMCOMPARATOR(row, where, datasetName);
-	} else if ("AND" in where) {
-		if (where.AND!.length === 0) {
-			throw new InsightError("AND can't be empty");
-		}
-		return where.AND!.every((child) => parseWhereObject(row, child, datasetName));
-	} else if ("OR" in where) {
-		if (where.OR!.length === 0) {
-			throw new InsightError("OR can't be empty");
-		}
-		return where.OR!.some((child) => parseWhereObject(row, child, datasetName));
-	} else if ("NOT" in where) {
-		return !parseWhereObject(row, where.NOT!, datasetName);
-	}
-	throw new InsightError("Invalid object");
 }

@@ -497,8 +497,8 @@ describe("InsightFacade", function () {
 					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
 				}
 				// expect(result).to.deep.equal(expected);
-				// console.log(result);
-				// console.log(expected);
+				//console.log(result);
+				//console.log(expected);
 				expect(result).to.have.deep.members(expected);
 			} catch (err) {
 				// console.log(err);
@@ -546,6 +546,8 @@ describe("InsightFacade", function () {
 		it("[valid/sort.json] SORT 1", checkQuery);
 		it("[valid/sort2.json] SORT 2", checkQuery);
 		it("[valid/sort3.json] SORT 3", checkQuery);
+
+		it("[valid/group.json] GROUP 1", checkQuery);
 		it(
 			"[valid/complex.json] SELECT dept, id, avg WHERE (avg > 90 AND dept = 'adhe') OR avg = 95 ORDER BY avg",
 			checkQuery
