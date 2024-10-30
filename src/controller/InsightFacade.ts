@@ -7,7 +7,8 @@ import {
 	NotFoundError,
 	ResultTooLargeError,
 } from "./IInsightFacade";
-import { selectAndOrder, isQuery, filterData, groupAndApply } from "./QueryUtils";
+import { selectAndOrder, isQuery, filterData } from "./QueryUtils";
+import { groupAndApply } from "./QueryFunctions";
 import fs from "fs-extra";
 import path from "node:path";
 
@@ -127,7 +128,7 @@ export default class InsightFacade implements IInsightFacade {
 				let transformedData = filteredData;
 
 				if (query.TRANSFORMATIONS) {
-					transformedData = groupAndApply(transformedData, query);
+					transformedData = groupAndApply(filteredData, query);
 				}
 
 				const selectedData = selectAndOrder(transformedData, query);
