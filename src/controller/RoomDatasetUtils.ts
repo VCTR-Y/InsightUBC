@@ -227,7 +227,8 @@ function parseRoomRow(row: any, building: any): any | null {
 	if (number && seats && furniture && type) {
 		return {
 			...building,
-			number: number.trim(),
+			number: String(number.trim()),
+			name: building.shortname + "_" + number.trim(),
 			seats: Number(seats.trim()),
 			furniture: furniture.trim(),
 			type: type.trim(),

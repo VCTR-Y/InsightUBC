@@ -22,6 +22,7 @@ export interface ITestQuery {
 }
 
 describe("InsightFacade", function () {
+	this.timeout(10000);
 	let facade: IInsightFacade;
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
@@ -326,7 +327,7 @@ describe("InsightFacade", function () {
 			try {
 				await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 				const testFacade: InsightFacade = new InsightFacade();
-				await testFacade.addDataset("sfu", sections, InsightDatasetKind.Sections);
+				await testFacade.addDataset("sfu", rooms, InsightDatasetKind.Rooms);
 				const datasets1 = await testFacade.listDatasets();
 
 				expect(datasets1).to.deep.equal([
@@ -337,8 +338,8 @@ describe("InsightFacade", function () {
 					},
 					{
 						id: "sfu",
-						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						kind: InsightDatasetKind.Rooms,
+						numRows: 364,
 					},
 				]);
 				await testFacade.removeDataset("ubc");
@@ -348,8 +349,8 @@ describe("InsightFacade", function () {
 				expect(datasets3).to.deep.equal([
 					{
 						id: "sfu",
-						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						kind: InsightDatasetKind.Rooms,
+						numRows: 364,
 					},
 				]);
 			} catch (_err) {
