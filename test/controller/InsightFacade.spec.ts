@@ -267,6 +267,12 @@ describe("InsightFacade", function () {
 			const result = await facade.addDataset("ubc", rooms, InsightDatasetKind.Rooms);
 			expect(result).to.have.members(["ubc"]);
 		});
+
+		it("should successfully add a sections and rooms dataset", async function () {
+			await facade.addDataset("ubcc", rooms, InsightDatasetKind.Rooms);
+			const result = await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+			expect(result).to.have.members(["ubcc", "ubc"]);
+		});
 	});
 
 	describe("ListDatasets", function () {
@@ -326,7 +332,7 @@ describe("InsightFacade", function () {
 			try {
 				await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 				const testFacade: InsightFacade = new InsightFacade();
-				await testFacade.addDataset("sfu", sections, InsightDatasetKind.Sections);
+				await testFacade.addDataset("sfu", rooms, InsightDatasetKind.Rooms);
 				const datasets1 = await testFacade.listDatasets();
 
 				expect(datasets1).to.deep.equal([
@@ -337,8 +343,8 @@ describe("InsightFacade", function () {
 					},
 					{
 						id: "sfu",
-						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						kind: InsightDatasetKind.Rooms,
+						numRows: 364,
 					},
 				]);
 				await testFacade.removeDataset("ubc");
@@ -348,8 +354,8 @@ describe("InsightFacade", function () {
 				expect(datasets3).to.deep.equal([
 					{
 						id: "sfu",
-						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						kind: InsightDatasetKind.Rooms,
+						numRows: 364,
 					},
 				]);
 			} catch (_err) {
