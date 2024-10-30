@@ -18,7 +18,7 @@ import {
 	addDatasetsMapToDisk,
 	loadFromDisk,
 } from "./SectionDatasetUtils";
-import {getRoomsFromContent} from "./RoomDatasetUtils";
+import { getRoomsFromContent } from "./RoomDatasetUtils";
 
 /**
  * This is the main programmatic entry point for the project.
