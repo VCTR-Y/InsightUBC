@@ -53,7 +53,7 @@ export function applyRule(token: string, group: Row[], field: string): any {
 			break;
 		case "MIN":
 			if (mfield.includes(currKey)) {
-				return Math.min(...values);
+				return Math.min(...values, Infinity);
 			}
 			break;
 		case "AVG":
