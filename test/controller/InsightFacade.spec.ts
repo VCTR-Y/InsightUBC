@@ -264,6 +264,12 @@ describe("InsightFacade", function () {
 			expect(result).to.have.members(["ubc"]);
 		});
 
+		it("should successfully add a rooms dataset where &amp -> & for furniture", async function () {
+			const oneBFile = await getContentFromArchives("campus&ampto&.zip");
+			const result = await facade.addDataset("ubc", oneBFile, InsightDatasetKind.Rooms);
+			expect(result).to.have.members(["ubc"]);
+		});
+
 		it("should successfully add a rooms dataset", async function () {
 			const result = await facade.addDataset("ubc", rooms, InsightDatasetKind.Rooms);
 			expect(result).to.have.members(["ubc"]);

@@ -49,7 +49,7 @@ async function parseBuildingsFromTable(buildingTable: any): Promise<any[]> {
 
 async function parseBuildingRooms(building: any, data: any): Promise<any[]> {
 	const parse5 = require("parse5");
-	const buildingFile = data.file(building.href);
+	const buildingFile = data.file(building.buildinghref);
 	if (!buildingFile) {
 		return [];
 	}
@@ -188,7 +188,7 @@ async function parseBuildingRow(row: any): Promise<any | null> {
 			address: address,
 			lat: lat,
 			lon: lon,
-			href: href,
+			buildinghref: href,
 		};
 	}
 	return null;
@@ -225,10 +225,15 @@ function parseRooms(html: string, building: any): any[] {
 function parseRoomRow(row: any, building: any): any | null {
 	const number = getCellContent(row, "views-field-field-room-number");
 	const seats = getCellContent(row, "views-field-field-room-capacity");
-	const furniture = getCellContent(row, "views-field-field-room-furniture");
+	let furniture = getCellContent(row, "views-field-field-room-furniture");
 	const type = getCellContent(row, "views-field-field-room-type");
+	const href = getCellHref(row, "views-field-field-room-number");
 
-	if (number && seats && furniture && type) {
+	if (furniture) {
+		furniture = furniture.replace(/&amp;/g, "&");
+	}
+
+	if (number && seats && furniture && type && href) {
 		return {
 			...building,
 			number: String(number.trim()),
@@ -236,6 +241,7 @@ function parseRoomRow(row: any, building: any): any | null {
 			seats: Number(seats.trim()),
 			furniture: furniture.trim(),
 			type: type.trim(),
+			href: href.trim(),
 		};
 	}
 	return null;
@@ -249,6 +255,21 @@ function getCellContent(row: any, className: string): string | null {
 		return classAttr?.value.includes(className);
 	});
 	return cell ? parse5.serialize(cell).replace(/(<([^>]+)>)/gi, "") : null;
+}
+
+// Helper function to get the href attribute from an anchor tag within a cell
+function getCellHref(row: any, className: string): string | null {
+	const cell = findNodesByTag(row, "td").find((cel) => {
+		const classAttr = cel.attrs?.find((attr: any) => attr.name === "class");
+		return classAttr?.value.includes(className);
+	});
+
+	if (cell) {
+		const anchorTag = findNodesByTag(cell, "a")[0];
+		const hrefAttr = anchorTag?.attrs?.find((attr: any) => attr.name === "href");
+		return hrefAttr ? hrefAttr.value : null;
+	}
+	return null;
 }
 // End of AI-generated code
 
