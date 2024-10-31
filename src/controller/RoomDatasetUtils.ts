@@ -266,7 +266,7 @@ async function fetchGeolocation(address: string): Promise<GeoResponse> {
 				response.on("end", () => {
 					try {
 						const geoData = JSON.parse(data);
-						if (geoData.lat !== null && geoData.lon !== null) {
+						if (geoData.lat !== undefined && geoData.lon !== undefined) {
 							resolve({ lat: geoData.lat, lon: geoData.lon });
 						} else {
 							resolve({ error: "Geolocation data not found for the address." });
