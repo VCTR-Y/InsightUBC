@@ -1,0 +1,30 @@
+{
+  "title": "GROUP 2",
+  "input": {
+    "WHERE": {
+      "IS": {
+        "sections_dept": "cpsc"
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_title",
+        "overallMin"
+      ]
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "sections_title"
+      ],
+      "APPLY": [
+        {
+          "overallMin": {
+            "MIN": "sections_avg"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": false,
+  "expected": [{"sections_title":"comptn, progrmng","overallMin":67.79},{"sections_title":"model comptn","overallMin":67.13},{"sections_title":"sftwr constructn","overallMin":68.13},{"sections_title":"intro comp sys","overallMin":64.62},{"sections_title":"basic alg&data","overallMin":65.1},{"sections_title":"dta&alg elec eng","overallMin":72.4},{"sections_title":"basics comp syst","overallMin":67.91},{"sections_title":"comptng life sci","overallMin":71},{"sections_title":"num comp alg prb","overallMin":68.64},{"sections_title":"num approx/discr","overallMin":68.35},{"sections_title":"intr rel databse","overallMin":71.89},{"sections_title":"intr sftwr eng","overallMin":72.27},{"sections_title":"programmng langs","overallMin":72.83},{"sections_title":"func & logic prg","overallMin":76.52},{"sections_title":"comp hard&os","overallMin":70.46},{"sections_title":"comp graphics","overallMin":67.85},{"sections_title":"internet comp","overallMin":68.54},{"sections_title":"softwr eng proj","overallMin":78.93},{"sections_title":"intr alg dsgn&an","overallMin":66.34},{"sections_title":"artificial intel","overallMin":67.48},{"sections_title":"machine lrn mine","overallMin":68.4},{"sections_title":"hum-com interact","overallMin":73.3},{"sections_title":"adv rel databse","overallMin":68.76},{"sections_title":"adv software eng","overallMin":74.04},{"sections_title":"compiler constrc","overallMin":72.24},{"sections_title":"adv opertng sysm","overallMin":68.79},{"sections_title":"distrbt'd systms","overallMin":71.75},{"sections_title":"parallel comput","overallMin":75.61},{"sections_title":"adv alg dsgn&anl","overallMin":68.77},{"sections_title":"theory comptg","overallMin":69.47},{"sections_title":"intel systems","overallMin":66.13},{"sections_title":"computer vision","overallMin":71.8},{"sections_title":"comptr & society","overallMin":72.75},{"sections_title":"hmn-cp interactn","overallMin":77.43},{"sections_title":"alg in bioin","overallMin":73.18},{"sections_title":"honours thesis","overallMin":83.08},{"sections_title":"student seminar","overallMin":84.5},{"sections_title":"fund alg dsgn&an","overallMin":78.87},{"sections_title":"thry of automata","overallMin":83.8},{"sections_title":"artif intell 1","overallMin":81.06},{"sections_title":"computl ling 1","overallMin":79.25},{"sections_title":"software eng","overallMin":82.5},{"sections_title":"prog lang princ","overallMin":84.25},{"sections_title":"intgrt sys desgn","overallMin":64},{"sections_title":"comput robotics","overallMin":79.88},{"sections_title":"para algs & arch","overallMin":82.65},{"sections_title":"artif intell 2","overallMin":82.55},{"sections_title":"comp comm protcl","overallMin":83.78},{"sections_title":"machine learn i","overallMin":81.12},{"sections_title":"phy user intfc","overallMin":82.07},{"sections_title":"hmn-cmpt intract","overallMin":81.64},{"sections_title":"info visualizatn","overallMin":88.47},{"sections_title":"m.sc major essay","overallMin":75}]
+}

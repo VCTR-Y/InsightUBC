@@ -503,7 +503,7 @@ describe("InsightFacade", function () {
 					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
 				}
 				// expect(result).to.deep.equal(expected);
-				// console.log(result);
+				//console.log(result);
 				// console.log(expected);
 				expect(result).to.have.deep.members(expected);
 			} catch (err) {
@@ -555,6 +555,8 @@ describe("InsightFacade", function () {
 		it("[valid/sort3.json] SORT 3", checkQuery);
 
 		it("[valid/group.json] GROUP 1", checkQuery);
+		it("[valid/group2.json] GROUP 2", checkQuery);
+		it("[valid/group3.json] GROUP 3", checkQuery);
 		it("[valid/room.json] ROOM 1", checkQuery);
 		it(
 			"[valid/complex.json] SELECT dept, id, avg WHERE (avg > 90 AND dept = 'adhe') OR avg = 95 ORDER BY avg",
@@ -583,6 +585,7 @@ describe("InsightFacade", function () {
 		it("[invalid/multiple.json] Query with multiple datasets", checkQuery);
 		it("[invalid/wildcard.json] Query with wildcard mutant", checkQuery);
 		it("[invalid/asterisk.json] Query with only asterisks", checkQuery);
+		it("[invalid/empty.json] Query with empty WHERE", checkQuery);
 
 		it("run in new instance", async function () {
 			const testTitle = "[valid/simple.json] SELECT dept, avg WHERE avg > 97";
