@@ -194,6 +194,8 @@ export function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
 		const selectedRow: any = {};
 
 		query.OPTIONS.COLUMNS.forEach((column) => {
+			// console.log(column);
+			// console.log(row);
 			const oldColumn = column.split("_")[1];
 			// if (!keys.includes(oldColumn)) {
 			// 	throw new InsightError("Invalid key");

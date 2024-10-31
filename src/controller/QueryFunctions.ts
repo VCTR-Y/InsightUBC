@@ -1,6 +1,6 @@
 import { InsightError } from "./IInsightFacade";
 import Decimal from "decimal.js";
-import { QueryObject } from "./QueryUtils";
+import { mfield, QueryObject } from "./QueryUtils";
 
 type Row = Record<string, any>;
 
@@ -41,30 +41,45 @@ export function groupData(data: Row[], groupKeys: string[]): Map<string, Row[]> 
 }
 
 export function applyRule(token: string, group: Row[], field: string): any {
-	const values = group.map((row) => row[field.split("_")[1]]).filter((v) => v !== undefined);
-
+	const currKey = field.split("_")[1];
+	// console.log(currKey);
+	const values = group.map((row) => row[currKey]).filter((v) => v !== undefined);
+	const round = 2;
 	switch (token) {
 		case "MAX":
-			return Math.max(...values);
+			if (mfield.includes(currKey)) {
+				return Math.max(...values, 0);
+			}
+			break;
 		case "MIN":
-			return Math.min(...values);
+			if (mfield.includes(currKey)) {
+				return Math.min(...values);
+			}
+			break;
 		case "AVG":
-			return calcAverage(values);
+			if (mfield.includes(currKey)) {
+				return calcAverage(values);
+			}
+			break;
 		case "COUNT":
 			return new Set(values).size;
 		case "SUM":
-			return values.reduce((sum, val) => sum + val, 0);
+			if (mfield.includes(currKey)) {
+				return Number(values.reduce((sum, val) => sum + val, 0).toFixed(round));
+			}
+			break;
 		default:
 			throw new InsightError("Invalid APPLY token");
 	}
+	throw new InsightError("Invalid apply operation");
 }
 
 function calcAverage(values: number[]): number {
-	const magicNumber = 2;
+	const round = 2;
 
 	const decValues = values.map((v) => new Decimal(v));
 	const total = decValues.reduce((t, v) => Decimal.add(t, v), new Decimal(0));
 	const numRows = values.length;
 	const avg = total.toNumber() / numRows;
-	return Number(avg.toFixed(magicNumber));
+	return Number(avg.toFixed(round));
 }
