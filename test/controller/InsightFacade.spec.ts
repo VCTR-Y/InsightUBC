@@ -563,6 +563,7 @@ describe("InsightFacade", function () {
 			"[valid/complex.json] SELECT dept, id, avg WHERE (avg > 90 AND dept = 'adhe') OR avg = 95 ORDER BY avg",
 			checkQuery
 		);
+		it("[valid/complex2.json] COMPLEX 2", checkQuery);
 		it("[valid/contains-inputstring.json] SELECT dept, avg WHERE dept IS '*cpsc*'", checkQuery);
 		it("[valid/wildcard-ends-with.json] SELECT dept, avg WHERE dept IS '*cpsc'", checkQuery);
 		it("[valid/wildcard-match-exactly.json] SELECT dept, avg WHERE dept IS 'cpsc'", checkQuery);

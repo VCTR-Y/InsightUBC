@@ -15,10 +15,15 @@ export function groupAndApply(data: Row[], query: QueryObject): Row[] {
 
 		groupKeys.forEach((key) => (result[key] = group[0][key.split("_")[1]]));
 
+		const finished: string[] = [];
 		applyRules.forEach((rule) => {
 			const [applyKey, applyObj] = Object.entries(rule)[0];
 			const [token, field] = Object.entries(applyObj)[0];
+			if (finished.includes(applyKey)) {
+				throw new InsightError("duplicate applyKey");
+			}
 			result[applyKey] = applyRule(token, group, field);
+			finished.push(applyKey);
 		});
 		return result;
 	});
