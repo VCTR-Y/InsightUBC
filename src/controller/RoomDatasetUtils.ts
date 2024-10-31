@@ -178,6 +178,10 @@ async function parseBuildingRow(row: any): Promise<any | null> {
 			return null;
 		}
 
+		if (typeof lat !== "number" || typeof lon !== "number") {
+			return null;
+		}
+
 		return {
 			fullname: fullname,
 			shortname: shortname,
