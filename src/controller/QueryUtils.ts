@@ -189,14 +189,25 @@ export function parseWhereObject(row: any, where: WhereObject, datasetName: stri
 	// return true;
 }
 
+function getApplyKeys(applyRules: ApplyRule[]): string[] {
+	return applyRules.map((rule) => Object.keys(rule)[0]);
+}
+
 export function selectAndOrder(filteredData: any[], query: QueryObject): any[] {
 	const selectedData = filteredData.map((row) => {
 		const selectedRow: any = {};
 
 		query.OPTIONS.COLUMNS.forEach((column) => {
+			if (isTransformationsObject(query.TRANSFORMATIONS)) {
+				const applyKeys = getApplyKeys(query.TRANSFORMATIONS.APPLY);
+				if (!query.TRANSFORMATIONS.GROUP.includes(column) && !applyKeys.includes(column)) {
+					throw new InsightError("Invalid columns");
+				}
+			}
 			// console.log(column);
 			// console.log(row);
 			const oldColumn = column.split("_")[1];
+
 			// if (!keys.includes(oldColumn)) {
 			// 	throw new InsightError("Invalid key");
 			// }
