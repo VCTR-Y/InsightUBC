@@ -7,15 +7,15 @@ export async function getRoomsFromContent(content: string): Promise<any[]> {
 	const data = await zip.loadAsync(content, { base64: true });
 	const parse5 = require("parse5");
 	const indexFile = data.file("index.htm");
-	const buildingsPath = "campus/discover/buildings-and-classrooms/";
-	const rooms = Object.keys(data.files);
+	// const buildingsPath = "campus/discover/buildings-and-classrooms/";
+	// const rooms = Object.keys(data.files);
 
 	if (!indexFile) {
 		throw new InsightError("Index.htm file not found");
 	}
-	if (!rooms.includes(buildingsPath)) {
-		throw new InsightError("buildings-and-classrooms folder not found");
-	}
+	// if (!rooms.includes(buildingsPath)) {
+	// 	throw new InsightError("buildings-and-classrooms folder not found");
+	// }
 
 	const indexContent = await indexFile.async("text");
 	const document = parse5.parse(indexContent);
@@ -172,7 +172,11 @@ async function parseBuildingRow(row: any): Promise<any | null> {
 		const href = link ? link.attrs.find((attr: any) => attr.name === "href")?.value.replace("./", "") : null;
 		const address = getTextContent(addressCell);
 
-		const { lat, lon } = await fetchGeolocation(address);
+		const { lat, lon, error } = await fetchGeolocation(address);
+
+		if (error) {
+			return null;
+		}
 
 		return {
 			fullname: fullname,

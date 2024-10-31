@@ -22,6 +22,7 @@ export interface ITestQuery {
 }
 
 describe("InsightFacade", function () {
+	// this.timeout(10000);
 	let facade: IInsightFacade;
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
