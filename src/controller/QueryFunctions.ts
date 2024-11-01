@@ -22,6 +22,12 @@ export function groupAndApply(data: Row[], query: QueryObject): Row[] {
 			if (finished.includes(applyKey)) {
 				throw new InsightError("duplicate applyKey");
 			}
+			if (field.length === 0) {
+				throw new InsightError("bad field");
+			}
+			if (!Object.keys(group[0]).includes(field.split("_")[1])) {
+				throw new InsightError("Invalid field");
+			}
 			result[applyKey] = applyRule(token, group, field);
 			finished.push(applyKey);
 		});
@@ -47,7 +53,6 @@ export function groupData(data: Row[], groupKeys: string[]): Map<string, Row[]> 
 
 export function applyRule(token: string, group: Row[], field: string): any {
 	const currKey = field.split("_")[1];
-	// console.log(currKey);
 	const values = group.map((row) => row[currKey]).filter((v) => v !== undefined);
 	const round = 2;
 	switch (token) {
