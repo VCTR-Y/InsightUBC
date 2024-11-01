@@ -22,7 +22,7 @@ export interface ITestQuery {
 }
 
 describe("InsightFacade", function () {
-	// this.timeout(10000);
+	this.timeout(10000);
 	let facade: IInsightFacade;
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
@@ -366,6 +366,7 @@ describe("InsightFacade", function () {
 					},
 				]);
 			} catch (_err) {
+				console.log(_err);
 				expect.fail("Should not throw an error.");
 			}
 		});

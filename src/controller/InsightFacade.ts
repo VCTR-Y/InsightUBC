@@ -58,6 +58,8 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("no valid rooms/sections");
 		}
 
+		console.log(data);
+
 		const dataset: InsightDataset = {
 			id: id,
 			kind: kind,
@@ -102,10 +104,10 @@ export default class InsightFacade implements IInsightFacade {
 				return dataset.id !== id;
 			});
 			await fs.writeJSON(datasetsPath, updatedDatasetsList, { spaces: 2 });
+			this.datasets.delete(id);
 		} catch (_err) {
 			throw new InsightError("Couldn't update datasets.json");
 		}
-		this.datasets.delete(id);
 
 		return id;
 	}
