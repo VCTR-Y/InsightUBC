@@ -509,7 +509,7 @@ describe("InsightFacade", function () {
 				if (errorExpected) {
 					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
 				}
-				// expect(result).to.deep.equal(expected);
+				//expect(result).to.deep.equal(expected);
 				//console.log(result);
 				// console.log(expected);
 				expect(result).to.have.deep.members(expected);
@@ -560,6 +560,8 @@ describe("InsightFacade", function () {
 		it("[valid/sort.json] SORT 1", checkQuery);
 		it("[valid/sort2.json] SORT 2", checkQuery);
 		it("[valid/sort3.json] SORT 3", checkQuery);
+		it("[valid/sort4.json] SORT 4", checkQuery);
+		it("[valid/sort5.json] SORT 5", checkQuery);
 
 		it("[valid/group.json] GROUP 1", checkQuery);
 		it("[valid/group2.json] GROUP 2", checkQuery);
