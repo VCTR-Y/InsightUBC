@@ -58,8 +58,6 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("no valid rooms/sections");
 		}
 
-		console.log(data);
-
 		const dataset: InsightDataset = {
 			id: id,
 			kind: kind,
