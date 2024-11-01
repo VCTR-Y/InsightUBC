@@ -7,7 +7,7 @@ import {
 	NotFoundError,
 	ResultTooLargeError,
 } from "./IInsightFacade";
-import { selectAndOrder, isQuery, filterData } from "./QueryUtils";
+import { selectAndOrder, isQuery, filterData, getDatasetName } from "./QueryUtils";
 import { groupAndApply } from "./QueryFunctions";
 import fs from "fs-extra";
 import path from "node:path";
@@ -118,10 +118,10 @@ export default class InsightFacade implements IInsightFacade {
 				throw new InsightError("COLUMNS must be a non-empty array");
 			}
 
-			const datasetName = options.COLUMNS.find((col) => col.includes("_"))?.split("_")[0];
+			let datasetName = options.COLUMNS.find((col) => col.includes("_"))?.split("_")[0];
 
 			if (datasetName === undefined) {
-				throw new InsightError("No dataset found");
+				datasetName = getDatasetName(query);
 			}
 
 			try {

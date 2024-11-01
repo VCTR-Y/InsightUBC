@@ -116,7 +116,7 @@ function isOrderObject(object: any): object is OrderObject {
 	);
 }
 
-function isTransformationsObject(object: any): object is TransformationsObject {
+export function isTransformationsObject(object: any): object is TransformationsObject {
 	return typeof object === "object" && object !== null && object;
 }
 
@@ -320,4 +320,21 @@ export function handleMCOMPARATOR(row: any, where: WhereObject, datasetName: str
 	}
 	const key = mkey.split("_")[1];
 	return type === "GT" ? row[key] > value : type === "LT" ? row[key] < value : row[key] === value;
+}
+
+export function getDatasetName(query: QueryObject): string {
+	if (isTransformationsObject(query.TRANSFORMATIONS) && query.TRANSFORMATIONS.APPLY?.length > 0) {
+		const applyKey = Object.keys(query.TRANSFORMATIONS.APPLY[0])[0];
+
+		const innerObject = query.TRANSFORMATIONS.APPLY[0][applyKey];
+		const innerKey = Object.values(innerObject)[0];
+
+		if (innerKey) {
+			return innerKey.split("_")[0];
+		} else {
+			throw new InsightError("No inner key found in the APPLY rule");
+		}
+	} else {
+		throw new InsightError("No dataset found or no APPLY rules present");
+	}
 }
