@@ -118,7 +118,11 @@ export default class InsightFacade implements IInsightFacade {
 				throw new InsightError("COLUMNS must be a non-empty array");
 			}
 
-			const datasetName = options.COLUMNS[0].split("_")[0];
+			const datasetName = options.COLUMNS.find((col) => col.includes("_"))?.split("_")[0];
+
+			if (datasetName === undefined) {
+				throw new InsightError("No dataset found");
+			}
 
 			try {
 				const dataset = await fs.readJSON(`data/${datasetName}.json`);
