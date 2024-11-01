@@ -54,7 +54,7 @@ export async function getSectionsFromContent(content: string): Promise<any[]> {
 	}
 
 	const coursesFolder = zip.folder("courses");
-	if (!coursesFolder || Object.keys(coursesFolder.files).length === 1) {
+	if (!coursesFolder) {
 		throw new InsightError("courses folder not found or no files found");
 	}
 
@@ -148,12 +148,16 @@ export async function addDatasetsMapToDisk(
 }
 
 export async function loadFromDisk(filePath: string, datasets: Map<string, InsightDataset>): Promise<void> {
-	const datasetsArray = await fs.readJSON(filePath);
-	datasetsArray.forEach((dataset: InsightDataset) => {
-		datasets.set(dataset.id, {
-			id: dataset.id,
-			kind: dataset.kind,
-			numRows: dataset.numRows,
+	try {
+		const datasetsArray = await fs.readJSON(filePath);
+		datasetsArray.forEach((dataset: InsightDataset) => {
+			datasets.set(dataset.id, {
+				id: dataset.id,
+				kind: dataset.kind,
+				numRows: dataset.numRows,
+			});
 		});
-	});
+	} catch (_err) {
+		throw new InsightError("Failed to load datasets from disk");
+	}
 }
