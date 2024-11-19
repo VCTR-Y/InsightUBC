@@ -4,7 +4,7 @@ import Log from "@ubccpsc310/folder-test/build/Log";
 import * as http from "http";
 import cors from "cors";
 import InsightFacade from "../controller/InsightFacade";
-import { InsightDatasetKind, InsightError, NotFoundError } from "../controller/IInsightFacade";
+import { InsightDatasetKind, NotFoundError } from "../controller/IInsightFacade";
 
 export default class Server {
 	private readonly port: number;
