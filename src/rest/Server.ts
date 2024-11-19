@@ -107,7 +107,7 @@ export default class Server {
 	private static async query(req: Request, res: Response): Promise<void> {
 		try {
 			const result = await new InsightFacade().performQuery(req.body);
-			res.status(StatusCodes.OK).json({ result });
+			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
 		}
@@ -116,7 +116,7 @@ export default class Server {
 	private static async list(_req: Request, res: Response): Promise<void> {
 		try {
 			const result = await new InsightFacade().listDatasets();
-			res.status(StatusCodes.OK).json({ result });
+			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
 			res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: err });
 		}
@@ -127,11 +127,11 @@ export default class Server {
 
 		try {
 			const result = await new InsightFacade().removeDataset(id);
-			res.status(StatusCodes.OK).json({ result });
+			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
 			if (err instanceof NotFoundError) {
 				res.status(StatusCodes.NOT_FOUND).json({ error: err });
-			} else if (err instanceof InsightError) {
+			} else {
 				res.status(StatusCodes.BAD_REQUEST).json({ error: err });
 			}
 		}
@@ -148,10 +148,11 @@ export default class Server {
 			kindType = InsightDatasetKind.Rooms;
 		} else {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid kind" });
+			return;
 		}
 		try {
 			const result = await new InsightFacade().addDataset(id, zipContentBase64, kindType);
-			res.status(StatusCodes.OK).json({ result });
+			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
 		}
