@@ -4,7 +4,7 @@ import Log from "@ubccpsc310/folder-test/build/Log";
 import * as http from "http";
 import cors from "cors";
 import InsightFacade from "../controller/InsightFacade";
-import { InsightDatasetKind, NotFoundError } from "../controller/IInsightFacade";
+import { InsightDatasetKind, InsightError, NotFoundError } from "../controller/IInsightFacade";
 
 export default class Server {
 	private readonly port: number;
@@ -109,7 +109,11 @@ export default class Server {
 			const result = await new InsightFacade().performQuery(req.body);
 			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+			if (err instanceof InsightError) {
+				res.status(StatusCodes.BAD_REQUEST).json({ error: err.message ?? "" });
+			} else {
+				res.status(StatusCodes.BAD_REQUEST).json({ error: "" });
+			}
 		}
 	}
 
@@ -118,7 +122,11 @@ export default class Server {
 			const result = await new InsightFacade().listDatasets();
 			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
-			res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: err });
+			if (err instanceof InsightError) {
+				res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: err.message ?? "" });
+			} else {
+				res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "" });
+			}
 		}
 	}
 
@@ -130,9 +138,11 @@ export default class Server {
 			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
 			if (err instanceof NotFoundError) {
-				res.status(StatusCodes.NOT_FOUND).json({ error: err });
+				res.status(StatusCodes.NOT_FOUND).json({ error: err.message ?? "" });
+			} else if (err instanceof InsightError) {
+				res.status(StatusCodes.BAD_REQUEST).json({ error: err.message ?? "" });
 			} else {
-				res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+				res.status(StatusCodes.BAD_REQUEST).json({ error: "" });
 			}
 		}
 	}
@@ -154,7 +164,11 @@ export default class Server {
 			const result = await new InsightFacade().addDataset(id, zipContentBase64, kindType);
 			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+			if (err instanceof InsightError) {
+				res.status(StatusCodes.BAD_REQUEST).json({ error: err.message ?? "" });
+			} else {
+				res.status(StatusCodes.BAD_REQUEST).json({ error: "" });
+			}
 		}
 	}
 
