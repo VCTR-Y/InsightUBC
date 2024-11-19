@@ -1,7 +1,8 @@
-function DatasetCard() {
+function DatasetCard(props) {
+	const {dataset} = props;
 	return (
 		<li style={{ padding: "5px" }}>
-			Test
+			{dataset.id}
 			<button style={{ margin: "5px" }}>Delete</button>
 		</li>
 	);

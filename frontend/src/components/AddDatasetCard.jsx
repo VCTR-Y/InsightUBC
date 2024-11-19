@@ -1,7 +1,9 @@
 import { useState } from "react";
-function AddDatasetCard() {
+function AddDatasetCard(props) {
+	const {addDataset} = props;
+
 	const [id, setId] = useState("");
-	const [zip, setZip] = useState("");
+	const [zip, setZip] = useState(null);
 
 	const handleUpload = async (e) => {
 		e.preventDefault();
@@ -10,7 +12,41 @@ function AddDatasetCard() {
 			alert("Both ID and file are required!");
 			return;
 		}
+
+		const formData = new FormData();
+		formData.append("file", zip); // Append the file to the FormData
+
+		try {
+			const response = await fetch(`http://localhost:4321/dataset/${id}/sections` , {
+				method: "PUT",
+				headers: {
+					'Content-Type': 'application/zip',
+				  },
+				body: formData,
+			})
+			if (response.ok) {
+				const newDataset = { id };
+				addDataset(newDataset);
+				alert('Dataset added successfully');
+			} else {
+				alert('Failed to add dataset');
+			}
+		} catch (err) {
+			alert(`Something weng wrong ${err}`);
+		}
+		
 	};
+
+	const handleFileChange = (e) => {
+		const selectedFile = e.target.files[0];
+		if (selectedFile && selectedFile.type === 'application/x-zip-compressed') {
+			setZip(selectedFile);
+		} else {
+			alert("Please select a zip file");
+			setZip(null);
+			e.target.value = null;
+		}
+	  };
 
 	return (
 		<div className="add-dataset" style={{ margin: "10px" }}>
@@ -22,7 +58,7 @@ function AddDatasetCard() {
 				</div>
 				<div>
 					<label style={{ margin: "10px" }}>Select A Dataset Zip File:</label>
-					<input type="file" value={zip} onChange={(e) => setZip(e.target.value)} />
+					<input type="file" onChange={handleFileChange} />
 				</div>
 				<button style={{ margin: "10px" }}>Upload Dataset</button>
 			</form>

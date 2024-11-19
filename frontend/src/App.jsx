@@ -6,11 +6,15 @@ import ListDatasetCard from "./components/ListDatasetCard.jsx";
 
 function App() {
 	const [datasets, setDatasets] = useState([]);
+
+	const addDataset = (newDataset) => {
+		setDatasets((prevDatasets) => [...prevDatasets, newDataset]);
+	}
 	return (
 		<div style={{ textAlign: "center" }}>
 			<Header></Header>
-			<AddDatasetCard></AddDatasetCard>
-			<ListDatasetCard></ListDatasetCard>
+			<AddDatasetCard addDataset={addDataset}></AddDatasetCard>
+			<ListDatasetCard datasets={datasets}></ListDatasetCard>
 			<InsightCard></InsightCard>
 		</div>
 	);
