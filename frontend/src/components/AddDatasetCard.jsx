@@ -1,4 +1,6 @@
+import { Box, Button, FormControl, FormLabel, Heading, Input } from "@chakra-ui/react";
 import { useState } from "react";
+
 function AddDatasetCard(props) {
 	const { addDataset } = props;
 
@@ -43,7 +45,7 @@ function AddDatasetCard(props) {
 
 	const handleFileChange = (e) => {
 		const selectedFile = e.target.files[0];
-		if (selectedFile && selectedFile.type === "application/x-zip-compressed") {
+		if (selectedFile && selectedFile.type === "application/zip") {
 			setZip(selectedFile);
 		} else {
 			alert("Please select a zip file");
@@ -53,20 +55,24 @@ function AddDatasetCard(props) {
 	};
 
 	return (
-		<div className="add-dataset" style={{ margin: "10px" }}>
-			<h2>Add A Dataset</h2>
+		<Box className="add-dataset" m="10px" p="20px">
+			<Heading as="h2" size="lg" mb="10px">
+				Add A Dataset
+			</Heading>
 			<form onSubmit={handleUpload}>
-				<div>
-					<label style={{ margin: "10px" }}>Dataset ID:</label>
-					<input type="text" style={{ margin: "10px" }} value={id} onChange={(e) => setId(e.target.value)} />
-				</div>
-				<div>
-					<label style={{ margin: "10px" }}>Select A Dataset Zip File:</label>
-					<input type="file" onChange={handleFileChange} />
-				</div>
-				<button style={{ margin: "10px" }}>Upload Dataset</button>
+				<FormControl id="dataset-id" mb="10px">
+					<FormLabel>Dataset ID:</FormLabel>
+					<Input type="text" value={id} onChange={(e) => setId(e.target.value)} />
+				</FormControl>
+				<FormControl id="dataset-file" mb="10px">
+					<FormLabel>Select A Dataset Zip File:</FormLabel>
+					<Input type="file" onChange={handleFileChange} />
+				</FormControl>
+				<Button type="submit" colorScheme="blue" mt="10px">
+					Upload Dataset
+				</Button>
 			</form>
-		</div>
+		</Box>
 	);
 }
 
