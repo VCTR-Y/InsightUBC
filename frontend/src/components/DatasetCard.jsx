@@ -1,3 +1,5 @@
+import { Box, Button, Flex, Text } from "@chakra-ui/react";
+
 function DatasetCard(props) {
 	const { dataset, deleteDataset } = props;
 
@@ -19,12 +21,14 @@ function DatasetCard(props) {
 	};
 
 	return (
-		<li style={{ padding: "5px" }}>
-			{dataset.id}
-			<button onClick={handleDelete} style={{ margin: "5px" }}>
-				Delete
-			</button>
-		</li>
+        <Box p={5} shadow="lg" borderWidth="1px" borderRadius="md">
+            <Flex justify="space-between" align="center">
+                <Text p={5}>{dataset.id}</Text>
+                <Button colorScheme="red" onClick={handleDelete}>
+                    Delete
+                </Button>
+            </Flex>
+        </Box>
 	);
 }
 
