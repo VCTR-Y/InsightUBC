@@ -9,12 +9,17 @@ function App() {
 
 	const addDataset = (newDataset) => {
 		setDatasets((prevDatasets) => [...prevDatasets, newDataset]);
-	}
+	};
+
+	const deleteDateset = (id) => {
+		setDatasets((prevDatasets) => prevDatasets.filter((dataset) => dataset.id !== id));
+	};
+
 	return (
 		<div style={{ textAlign: "center" }}>
 			<Header></Header>
 			<AddDatasetCard addDataset={addDataset}></AddDatasetCard>
-			<ListDatasetCard datasets={datasets}></ListDatasetCard>
+			<ListDatasetCard datasets={datasets} deleteDataset={deleteDateset}></ListDatasetCard>
 			<InsightCard></InsightCard>
 		</div>
 	);
