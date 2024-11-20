@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddDatasetCard from "./components/AddDatasetCard.jsx";
 import Header from "./components/Header.jsx";
 import InsightCard from "./components/InsightCard.jsx";
@@ -12,9 +12,29 @@ function App() {
 		setDatasets((prevDatasets) => [...prevDatasets, newDataset]);
 	};
 
-	const deleteDateset = (id) => {
+	const deleteDataset = (id) => {
 		setDatasets((prevDatasets) => prevDatasets.filter((dataset) => dataset.id !== id));
 	};
+
+	const loadDatasets = async () => {
+		try {
+			const response = await fetch("http://localhost:4321/datasets");
+			if (response.ok) {
+				const data = await response.json();
+				setDatasets(data.result);
+			} else {
+				alert("Failed to fetch datasets");
+			}
+		} catch (err) {
+			alert(`Something went wrong ${err}`);
+		}
+	}
+
+	const [selected, selectDataset] = useState(null);
+
+	useEffect(() => {
+        loadDatasets();
+    }, []);
 
 	return (
 		<div style={{ textAlign: "center" }}>
@@ -22,9 +42,9 @@ function App() {
 			<VStack>
 			<HStack>
 			<AddDatasetCard addDataset={addDataset}></AddDatasetCard>
-			<ListDatasetCard datasets={datasets} deleteDataset={deleteDateset}></ListDatasetCard>
+			<ListDatasetCard datasets={datasets} deleteDataset={deleteDataset} selectDataset={selectDataset}></ListDatasetCard>
 			</HStack>
-			<InsightCard></InsightCard>
+			<InsightCard selectedDataset={selected}></InsightCard>
 			</VStack>
 		</div>
 	);
