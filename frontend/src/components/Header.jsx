@@ -12,10 +12,10 @@ function Header() {
 		// 	<button>DARK MODE BUTTON</button>
 		// </header>
 		<>
-			<Box px={4}>
+			<Box px={4} border={"1px solid hsl(0, 0%, 80%)"}>
 				<Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
 					<HStack>
-						<Image src={ubcLogo} alt="UBC Logo" width="50" height="50" />
+						<Image src={ubcLogo} alt="UBC Logo" width="50" height="50"/>
 						<Heading>InsightUBC</Heading>
 					</HStack>
 					<Flex alignItems={"center"}>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Heading, FormControl, FormLabel, Select, Input, Button } from "@chakra-ui/react";
+import { Box, Heading, FormControl, FormLabel, Select, Input, Button, useToast } from "@chakra-ui/react";
 
 import { Bar } from 'react-chartjs-2';
 import { Chart, registerables } from 'chart.js';
@@ -12,6 +12,7 @@ function InsightCard(props) {
 	const [dept, setDept] = useState("");
 	const [course, setCourse] = useState("");
 	const [chartData, setChartData] = useState(null);
+	const toast = useToast();
 	// const insightOptions = {
 	// 	"passRate": "SELECT dept, course, AVG(passRate) FROM dataset WHERE dept = ? GROUP BY course",
 	// 	"profAverage": "SELECT professor, AVG(grade) FROM dataset WHERE dept = ? AND course = ? GROUP BY professor",
@@ -137,7 +138,13 @@ function InsightCard(props) {
 
 	const queryInsight = async (insight) => {
 		if (!selectedDataset) {
-			alert("Please select a dataset");
+			toast({
+				title: "Please select a dataset",
+				status: "error",
+				position: "top-right",  
+				duration: 5000,
+				isClosable: true,
+			  });			
 			return;
 		}
 		try {
@@ -226,12 +233,22 @@ function InsightCard(props) {
 					});
 				}
 			} else {
-				alert("Failed to fetch insight");
-			}
+			toast({
+				title: "Failed to fetch insight",
+				status: "error",
+				position: "top-right",  
+				duration: 5000,
+				isClosable: true,
+			  });					}
 		}
 		} catch (err) {
-			alert(`Something went wrong ${err}`);
-		}
+			toast({
+				title: "Something went wrong",
+				status: "error",
+				position: "top-right",  
+				duration: 5000,
+				isClosable: true,
+			  });				}
 	};
 
 	const handleSelectChange = (event) => {
