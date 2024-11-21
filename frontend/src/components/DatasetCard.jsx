@@ -1,23 +1,47 @@
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Text, useToast} from "@chakra-ui/react";
 
 function DatasetCard(props) {
     const { dataset, deleteDataset, selectDataset } = props;
+    const toast = useToast();
 
     const handleDelete = async () => {
         try {
+            const toastId = toast({
+				title: "Deleting dataset...",
+				status: "loading",
+                position: "top-right",  
+				duration: null, // Keep it open until updated
+				isClosable: true,
+			  });
+
             const response = await fetch(`http://localhost:4321/dataset/${dataset.id}`, {
                 method: "DELETE",
             });
 
             if (response.ok) {
                 deleteDataset(dataset.id);
-                alert("Dataset deleted successfully.");
+                toast.update(toastId, {
+					title: "Dataset deleted successfully",
+					status: "success",
+					duration: 5000,
+					isClosable: true,
+				  });
             } else {
-                alert("Failed to delete dataset from server.");
-            }
+				toast.update(toastId, {
+					title: "Failed to delete dataset",
+					description: "Please check your input and try again.",
+					status: "error",
+					duration: 5000,
+					isClosable: true,
+				  });	            }
         } catch (err) {
-            alert(`Error deleting dataset: ${err.message}`);
-        }
+			toast({
+				title: "Something went wrong",
+				description: `Error: ${err.message}`,
+				status: "error",
+				duration: 5000,
+				isClosable: true,
+			  });        }
     };
 
     const handleSelect = () => {

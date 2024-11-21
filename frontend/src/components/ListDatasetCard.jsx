@@ -4,13 +4,13 @@ import DatasetCard from "./DatasetCard";
 function ListDatasetCard(props) {
 	const { datasets, deleteDataset, selectDataset } = props;
 	return (
-		<Box className="list-dataset" m="10px" p={"5"}>
+		<Box className="list-dataset" m="10px" p={"5"} minH={"300px"} minW={"300px"}>
 			<Heading as="h2" size="lg" m="10px">Datasets</Heading>
-			<List>
-				{datasets.map((dataset, index) => {
-					return <DatasetCard key={dataset.id} dataset={dataset} deleteDataset={deleteDataset} selectDataset={selectDataset}></DatasetCard>;
-				})}
-			</List>
+				<List>
+					{datasets.map((dataset, index) => {
+						return <DatasetCard key={dataset.id} dataset={dataset} deleteDataset={deleteDataset} selectDataset={selectDataset}></DatasetCard>;
+					})}
+				</List>
 		</Box>
 	);
 }
