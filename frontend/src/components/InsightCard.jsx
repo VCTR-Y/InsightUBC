@@ -227,9 +227,6 @@ function InsightCard(props) {
 					};
 					setChartData({
 						...processedData,
-						options: {
-							indexAxis: 'y',
-						},
 					});
 				}
 			} else {
@@ -283,7 +280,23 @@ function InsightCard(props) {
 			</Box>
 			{chartData && (
 				<Box width="100%" height="100%" mt="5">
-					<Bar width="100%" height="50%" data={chartData} />
+					<Bar
+						width="100%"
+						height="50%"
+						options={{
+							scales: {
+								y: {
+									min: 50,
+									max: 100,
+									ticks: {
+										stepSize: 10
+									}
+								},
+								x: {},
+							},
+						}}
+						data={chartData}
+					/>
 				</Box>
 			)}
 		</Box>

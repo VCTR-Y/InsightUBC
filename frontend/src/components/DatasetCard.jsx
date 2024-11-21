@@ -1,15 +1,16 @@
-import { Box, Button, Flex, Text, useToast} from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton, Popover, PopoverAnchor, PopoverArrow, PopoverBody, PopoverCloseButton, PopoverContent, PopoverHeader, PopoverTrigger, Text, Tooltip, useToast } from "@chakra-ui/react";
+import { InfoOutlineIcon } from "@chakra-ui/icons";
 
 function DatasetCard(props) {
-    const { dataset, deleteDataset, selectDataset } = props;
     const toast = useToast();
+	const { dataset, deleteDataset, selectDataset } = props;
 
     const handleDelete = async () => {
         try {
             const toastId = toast({
 				title: "Deleting dataset...",
 				status: "loading",
-                position: "top-right",  
+                position: "top-right",
 				duration: null, // Keep it open until updated
 				isClosable: true,
 			  });
@@ -44,12 +45,12 @@ function DatasetCard(props) {
 			  });        }
     };
 
-    const handleSelect = () => {
-        selectDataset(dataset.id);
-    };
+	const handleSelect = () => {
+		selectDataset(dataset.id);
+	};
 
-	return (
-		<Box p={4} shadow="lg" borderWidth="1px" borderRadius="md" cursor="pointer">
+	const renderCardContent = () => (
+		<Box shadow="lg" borderWidth="1px" borderRadius="md" cursor="pointer" p={4}>
 			<Flex justify="space-between" align="center">
 				<Flex align="center">
 					<input
@@ -60,13 +61,21 @@ function DatasetCard(props) {
 						style={{ marginRight: "10px" }}
 					/>
 					<Text p={"5"}>{dataset.id}</Text>
+
 				</Flex>
+				<Flex align="center">
+				<Tooltip  label={`Num rows: ${dataset.numRows}`}>
+					<InfoOutlineIcon m={"5"}  />
+				</Tooltip>
 				<Button colorScheme="red" onClick={(e) => { e.stopPropagation(); handleDelete(); }}>
 					Delete
 				</Button>
+				</Flex>
 			</Flex>
 		</Box>
 	);
+
+	return renderCardContent();
 }
 
 export default DatasetCard;
