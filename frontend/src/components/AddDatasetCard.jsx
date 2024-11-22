@@ -79,6 +79,7 @@ function AddDatasetCard(props) {
 			toast({
 				title: "Something went wrong",
 				description: `Error: ${err.message}`,
+				position: "top-right",
 				status: "error",
 				duration: 5000,
 				isClosable: true,
