@@ -1,5 +1,5 @@
 import { Box, Button, FormControl, FormLabel, Heading, Input, useToast } from "@chakra-ui/react";
-import { DownloadIcon } from '@chakra-ui/icons'
+import { DownloadIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 
 function AddDatasetCard(props) {
@@ -7,10 +7,9 @@ function AddDatasetCard(props) {
 
 	const [id, setId] = useState("");
 	const [zip, setZip] = useState(null);
-	const [isUploading, setIsUploading] = useState(false); 
+	const [isUploading, setIsUploading] = useState(false);
 
 	const toast = useToast();
-
 
 	const handleUpload = async (e) => {
 		e.preventDefault();
@@ -22,7 +21,7 @@ function AddDatasetCard(props) {
 				position: "top-right",
 				duration: 5000, // Keep it open until updated
 				isClosable: true,
-			  });
+			});
 			return;
 		}
 
@@ -33,7 +32,7 @@ function AddDatasetCard(props) {
 				position: "top-right",
 				duration: 5000, // Keep it open until updated
 				isClosable: true,
-			  });
+			});
 			return;
 		}
 
@@ -41,15 +40,15 @@ function AddDatasetCard(props) {
 		formData.append("file", zip);
 
 		try {
-			setIsUploading(true);	
+			setIsUploading(true);
 			const toastId = toast({
 				title: "Adding dataset...",
 				status: "loading",
 				position: "top-right",
 				duration: null, // Keep it open until updated
 				isClosable: true,
-			  });
-			
+			});
+
 			const response = await fetch(`http://localhost:4321/dataset/${id}/sections`, {
 				method: "PUT",
 				headers: {
@@ -65,7 +64,7 @@ function AddDatasetCard(props) {
 					status: "success",
 					duration: 5000,
 					isClosable: true,
-				  });
+				});
 			} else {
 				toast.update(toastId, {
 					title: "Failed to add dataset",
@@ -73,8 +72,8 @@ function AddDatasetCard(props) {
 					status: "error",
 					duration: 5000,
 					isClosable: true,
-				  });			
-				}
+				});
+			}
 		} catch (err) {
 			toast({
 				title: "Something went wrong",
@@ -83,7 +82,7 @@ function AddDatasetCard(props) {
 				status: "error",
 				duration: 5000,
 				isClosable: true,
-			  });
+			});
 		} finally {
 			setIsUploading(false);
 		}
@@ -91,7 +90,10 @@ function AddDatasetCard(props) {
 
 	const handleFileChange = (e) => {
 		const selectedFile = e.target.files[0];
-		if (selectedFile && ((selectedFile.type === "application/x-zip-compressed") || selectedFile.type === "application/zip")) {
+		if (
+			selectedFile &&
+			(selectedFile.type === "application/x-zip-compressed" || selectedFile.type === "application/zip")
+		) {
 			setZip(selectedFile);
 		} else {
 			toast({
@@ -100,7 +102,7 @@ function AddDatasetCard(props) {
 				position: "top-right",
 				duration: 5000,
 				isClosable: true,
-			  });	
+			});
 			setZip(null);
 			e.target.value = null;
 		}
@@ -120,7 +122,7 @@ function AddDatasetCard(props) {
 					<FormLabel>Select A Dataset Zip File:</FormLabel>
 					<Input type="file" onChange={handleFileChange} display={"flex"} size={"auto"} />
 				</FormControl>
-				<Button rightIcon={<DownloadIcon/>} type="submit" colorScheme="blue" mt="10px" disabled={isUploading}>
+				<Button rightIcon={<DownloadIcon />} type="submit" colorScheme="blue" mt="10px" disabled={isUploading}>
 					Upload Dataset
 				</Button>
 			</form>
