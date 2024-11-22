@@ -10,6 +10,7 @@ function App() {
 
 	const addDataset = (newDataset) => {
 		setDatasets((prevDatasets) => [...prevDatasets, newDataset]);
+		loadDatasets();
 	};
 
 	const deleteDataset = (id) => {
